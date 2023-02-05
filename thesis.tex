@@ -50,9 +50,9 @@
 % \documentclass[master,biber,resumebib]{nudtpaper}
 %
 %7. 如果是专硕，则使用prof选项
-% \documentclass[master,biber,prof]{nudtpaper}
+\documentclass[master,biber,resumebib,prof]{nudtpaper}
 %
-\documentclass[doctor,twoside,biber,resumebib,fz]{nudtpaper}
+% \documentclass[doctor,twoside,biber,resumebib,fz]{nudtpaper}
 \addbibresource[location=local]{ref/refs.bib}
 \usepackage{mynudt}
 
@@ -60,20 +60,19 @@
 \serialno{0123456}
 \confidentiality{公开}
 \UDC{}
-\title{国防科大学位论文\LaTeX{}模板\\
-使用手册}
-\displaytitle{国防科技大学学位论文\LaTeX{}模板}
-\author{张三}
+\title{联邦学习中梯度的安全聚合关键技术研究}
+\displaytitle{联邦学习中梯度的安全聚合关键技术研究}
+\author{罗淞巍}
 \zhdate{\zhtoday}
-\entitle{How to Use the \LaTeX{} Document Class for NUDT Dissertations}
-\enauthor{ZHANG San}
+\entitle{Research on Key Techniques for Secure Aggregation of Gradients in Federated Learning}
+\enauthor{Songwei Luo}
 \endate{\entoday}
-\subject{通信与信息工程}
-\ensubject{Information and Communication Engineering}
-\researchfield{自动目标识别与模糊工程}
-\supervisor{李四\quad{}教授}
-\cosupervisor{王五\quad{}副教授} % 没有就空着
-\ensupervisor{Prof. LI Si}
+\subject{计算机技术}
+\ensubject{Computer Technology}
+\researchfield{隐私保护联邦学习}
+\supervisor{付绍静\quad{}教授}
+\cosupervisor{} % 没有就空着
+\ensupervisor{Prof. Shaojing Fu}
 \encosupervisor{} % 没有就空着
 \papertype{工学}
 \enpapertype{Engineering}
@@ -96,15 +95,15 @@
 \newif\ifreview\reviewfalse
 
 \midmatter
-\input{data/abstract}
-\input{data/denotation}
+\input{data-lsw/abstract}
+\input{data-lsw/denotation}
 
 %书写正文，可以根据需要增添章节; 正文还包括致谢，参考文献与成果
 \mainmatter
-\input{data/chap01}
-\input{data/chap02}
+\input{data-lsw/chap01}
+\input{data-lsw/chap02}
 
-\input{data/ack}
+\input{data-lsw/ack}
 
 \cleardoublepage
 \phantomsection
@@ -121,10 +120,10 @@
 \bibliography{ref/refs}
 \fi
 
-\input{data/resume}
+\input{data-lsw/resume}
 % 最后，需要的话还要生成附录，全文随之结束。
 \appendix
 \backmatter
-\input{data/appendix01}
+\input{data-lsw/appendix01}
 
 \end{document}
