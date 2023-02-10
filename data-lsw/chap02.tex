@@ -1,4 +1,4 @@
-\chapter{论文正文}
+\chapter{相关研究综述}
 \label{chap:main}
 本章将进入论文排版的正文, 按元素分主要包括：
 {\kai 字体段落，图片表格，公式定理，参考文献}这几部分。
@@ -6,7 +6,7 @@
 都将被一一介绍，希望大家在排版自己的学位论文前能细致的看一遍，记住样例的格式和
 方法，方便上手。
 
-\section{字体段落}
+\section{隐私保护联邦学习综述}
 \label{sec:font}
 
 陈赓（1903年2月27日－1961年3月16日），原名陈庶康，中国湖南湘乡人，军事家。出生将门，其祖父为湘军将领陈翼怀。
@@ -41,8 +41,8 @@ Adobe中文字体有四种：
 \item[小五] {\song\xiaowu 陈赓大将}
 \end{compactitem}
 
-\section{表格明细}
-\label{sec:figure}
+\section{拜占庭鲁棒联邦学习综述}
+\label{sec:byzantine}
 表格是论文的重要组成部分，我们从简单的表格讲起，到复杂的表格为止。
 
 模板中关于表格的宏包有三个： \textsf{booktabs}、\textsf{array} 和
@@ -243,7 +243,8 @@ EP.B.8 & 126.74  & 0.003 & 0.017 & 0.005 & 0.083 & 1656   \\
 这个命令不会给表格编号，也就是出来的只有标题文字而没有“表~XX”，“图~XX”，否则
 索引里面序号{\kai 不连续}就显得不伦不类，这也是 \LaTeX{} 里星号命令默认的规则。
 
-\section{绘图插图}
+\section{面向异质数据的联邦学习综述}
+\label{sec:noniid}
 
 本模板不再预先装载任何绘图包（如 \textsf{pstricks，pgf} 等），完全由你自己来决定。
 个人觉得 \textsf{pgf} 不错，不依赖于 Postscript。此外还有很多针对 \LaTeX{} 的
@@ -320,8 +321,8 @@ jPicEdt 等等。本人强烈推荐\textsf{Ipe}。
 可以上网去查，但这里{\kai 推荐一点}，用好export命令，使得插入图片时尽可能的不要
 缩放，保证图文的一致性。
 
-\section{公式定理}
-\label{sec:equation}
+\section{本章小结}
+\label{sec:conclusion}
 贝叶斯公式如式~(\ref{equ:chap1:bayes})，其中$p(y|\mathbf{x})$为后验；
 $p(\mathbf{x})$为先验；分母$p(\mathbf{x})$ 为归一化因子，这是
 实际应用中十分恐怖的一个积分式。
@@ -430,7 +431,6 @@ $\beta_a=\lnot \left(\left[s_1\lor s_2\lor \cdots\lor s_m\right]^T\right)$，而
   \end{algorithmic}
 \end{algorithm}
 
-\section{参考文献}
 \label{sec:bib}
 当然参考文献可以直接写 bibitem，虽然费点功夫，但是好控制，各种格式可以自己随意改
 写，在nudtpaper里面，建议使用JabRef编辑和管理文献，再结合指定的样式，
@@ -460,7 +460,6 @@ $\beta_a=\lnot \left(\left[s_1\lor s_2\lor \cdots\lor s_m\right]^T\right)$，而
 
 
 
-\section{代码高亮}
 有些时候我们需要在论文中引入一段代码，用来衬托正文的内容，或者体现关键思路的实现。
 在模板中，统一使用\texttt{listings}宏包，并且设置了基本的内容格式，并建议用户只
 使用三个接口，分别控制：编程语言，行号以及边框。简洁达意即可，下面分别举例说明。
@@ -523,7 +522,6 @@ public class HelloWorld {
 }   // 世界，你好！
 \end{code}
 
-\section{符号列表}
 
 {\hei 前面的话：}{\kai\color{blue}
 2.2版本后默认使用nomencl环境，如果你还是希望使用传统的\verb|definition.tex|，那么只需注释掉
@@ -610,7 +608,6 @@ R是Roman什么的，只要统一就好，只需记住，组间排列是按字�
 \end{compactenum}
 }
 
-\section{中文习惯}
 \label{sec:chinese}
 
 对于itemize过大的行间距，用户可以使用compactitem环境来替代，但是模板中不进行默认替代，
