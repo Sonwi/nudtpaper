@@ -31,12 +31,55 @@
 最后，第\ref{4-conclusion}节对本章进行了总结。
 
 \section{预备知识}\label{4-pre}
+本节简要介绍了本章方案设计涉及到的背景知识，其中包括异质数据对FL的具体影响以及异质数据的分类、FL+HC方案简介以及本节用到的密码工具。
+
+\subsection{FL中异质数据的影响及分类}
+异质数据，也被称为非独立同分布数据（Non-IID），描述的是FL中参与方数据分布不一致的情况
+在真实的FL场景中，参与方之间的数据分布往往是不一致的，这会对基于FedAvg训练得到的全局模型性能有较大的影响。具体来说，参与方数据分布的不一致（即$\mathcal{P}_i \neq \mathcal{P}_j$, i，j表示不同的参与方），会导致参与方$P_i$的目标函数和参与方$P_j$的目标函数不一致，因此$P_i$和$P_j$之间的梯度会出现偏差 \cite{kaissis2020secure}。最后导致收敛的全局模型表现比在独立同分布场景下差很多。为了更加细致的研究异质数据对FL的影响，我们列举了典型的异质数据分类，如下所示：
+\begin{compactitem}
+    \item \textbf{数据特征分布偏差}（$\mathcal{P}_i(x) \neq \mathcal{P}_j(x)$）：对于参与方$i$和参与方$j$来说，数据集$D_i$，$D_j$中的数据特征$x$的分布$\mathcal{P}_i(x)$，$\mathcal{P}_j(x)$不一致。以手写数字识别数据集MNIST为例， 参与方$i$偏向于持有标签为1和2的数据特征，而参与方$j$偏向于持有标签为3和4的数据特征。
+    \item \textbf{数据标签分布偏差}（$\mathcal{P}_i(y) \neq \mathcal{P}_j(y)$）：对于参与方$i$和参与方$j$来说，数据集$D_i$，$D_j$中的数据标签$y$的分布$\mathcal{P}_i(y)$，$\mathcal{P}_j(y)$不一致。以手写数字识别数据集MNIST为例， 参与方$i$偏向于持有标签为1和2的数据标签，而参与方$j$偏向于持有标签为3和4的数据标签。
+    \item \textbf{数据标注概念偏差}（$\mathcal{P}_i(y \mid x) \neq\mathcal{P}_j(y \mid x)$）：对于参与方$i$和参与方$j$来说，在数据集$D_i$，$D_j$中拥有相同的某个数据特征$x$，但是数据标签却不一样。以手写数字识别数据集MNIST为例， 参与方$i$和参与方$j$都拥有相同的数据特征$x$，但是$i$标注标签为1，而$j$标注标签为2。
+\end{compactitem}
+
+\subsection{FL+HC简介}
+FL+HC \cite{briggs2020federated} 致力于解决FL中面临的异质数据挑战，提出了一种基于聚类思想的FL梯度聚合方案。
+该方案认为，参与方之间数据的异质性会导致用户本地的学习目标不一致，于是通过对用户梯度进行聚类，将具有相似梯度的用户聚在一类，并将划分在同一个簇的用户视为学习目标一致的用户，然后让同一类用户协同产生一个全局模型。
+具体来讲，FL+HC在FL进程中的第$n$个轮次，添加了一个对梯度的层次聚类过程。在聚类步骤之前，FL+HC的训练方式和经典FL一样，收集所有梯度然后计算平均，当聚类轮次$n$到来时，聚合服务器会根据所有用户梯度之间的相似性，进行层次聚类操作，最后根据聚类结果将用户划分为不同的簇。
+在接下来的轮次，每个簇内的用户被视为拥有同样的学习目标，并且每个簇会协同生成一个和其它簇不同的全局模型。
+如图\ref{hcjpg}所示，有着不同目标的参与方在聚类后被划分到了不同的簇，然后分别生成属于本簇的全局模型。
+
+\begin{figure}[htbp]
+    \begin{center}
+        \includegraphics[scale=0.13]{figures/work2figs/hc.jpg}
+        \caption{FL+HC简介}
+        \label{hcjpg}
+    \end{center}
+\end{figure}
+
+\subsection{密码技术介绍}
+
+\subsubsection{加性秘密共享}
+加性秘密共享是Shamir \cite{shamir1979share} 提出的一种安全多方计算技术。本章我们使用的是一种（2，2）的加性秘密共享方案，可用于安全两方计算（2PC）。这种方案可以在不同大小的环上做两方的安全计算，本章使用到的是两种特殊的环，环$\mathbb{Z}_2$和$\mathbb{p}, p=2^l$（$l$一般为32）。当使用环$\mathbb{Z}_2$时，也被称为布尔秘密共享。
+在布尔秘密共享方案中，布尔值$x \in \mathbb{Z}_2$可以被拆分为布尔共享份$\langle x\rangle_0^B$ 和 $\langle x\rangle_1^B$，其中三者满足$x = \langle x\rangle_0^B \oplus \langle x\rangle_0^B\;\text{mod}\;2$。
+在使用环$x \in \mathbb{Z}_p$时，可以把环$\mathbb{Z}_p$上的元素$x$拆分为两个共享份$(\langle x\rangle_0, \langle x\rangle_1) = (r, x -r) \in \mathbb{Z}_p^2$， 其中$r$是在环$\mathbb{Z}_p$上随机采样得到的元素。通过执行安全的两方计算协议 \cite{rathee2020cryptflow2, rathee2021sirnn}，在不重构出原始值的情况下，完成任意的算术运算。
+
+\subsubsection{本章使用的安全两方计算（2PC）协议}
+为了在共享份额上进行进行安全的计算，我们使用到了三种加性秘密共享上的基本运算 \cite{rathee2021sirnn}，其基本信息的描述如下：
+\begin{compactitem}
+    \item \textbf{安全两方有符号数乘法}（Signed Value Multiplication，$\mathcal{F}_{\text{SMul}}$）: 有符号数乘法 $(\mathcal{F}_{\text{SMul}})$ 以两方上的共享份额 $\langle x\rangle$ 以及 $\langle y\rangle$ 作为输入，然后输出 $\langle z\rangle$，其中三者满足：$z = x \times y$。
+    \item \textbf{安全两方多路选择器}（Multiplexer，$\mathcal{F}_{\text{MUX}}$）: 多路选择器 $(\mathcal{F}_{\text{MUX}})$ 以 $\langle x\rangle^B$ 和 $\langle y\rangle$ 作为输入，然后输出 $\langle z\rangle$，其中如果$x = 1$，则输出的$z$满足$z = y$，否则满足$z = 0$。 
+    \item \textbf{安全两方DRelu} $(\mathcal{F}_{\text{DRelu}})$: DRelu 函数 $(\mathcal{F}_{\text{DRelu}})$ 以 $\langle x\rangle$ 作为输入，然后输出 $\langle z\rangle^B$，其中如果$x \geq 0$，则输出的$z$满足 $z = 1$，否则满足 $z = 0$。
+\end{compactitem}
+
+\subsubsection{伪随机生成技术}
+伪随机生成技术（Pseudorandom Generator, PRG）\cite{yao1982theory} 可以根据一个均匀分布的随机数种子，生成一串很长的伪随机字符。只要这个随机数种子不被敌对方窃取，就能保证生成的这段随机字符，无法在多项式时间内与均匀分布采样出来的字符串做出区分。本章方案使用伪随机生成技术在参数上传和分发阶段保证参数隐私的同时，减少一半的通信开销（细节见\ref{4-framwork}）。
 
 \section{问题描述}\label{4-problem}
 
 \section{基于秘密共享的隐私保护计算模块}\label{4-building}
 
-\section{面向异质数据的隐私保护梯度聚合方案}\label{4-framwork}
+\section{面向异质数据的隐私保护梯度聚合方案}\label{4-framework}
 
 \section{实验评估}\label{4-exp}
 
