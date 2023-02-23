@@ -26,8 +26,10 @@
 % 配置算法包
 \algsetup{indent=3em}
 \floatname{algorithm}{算法}
-\renewcommand{\algorithmicrequire}{\textbf{已知:}}
-\renewcommand{\algorithmicensure}{\textbf{求:\quad}}
+% \renewcommand{\algorithmicrequire}{\textbf{已知:}}
+% \renewcommand{\algorithmicensure}{\textbf{求:\quad}}
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}
+\renewcommand{\algorithmicensure}{\textbf{输出:}}
 \renewcommand{\algorithmiccomment}[1]{\hfill$\rhd$ #1}
 % \renewcommand{\algorithmiccomment}[1]{\hfill$\blacktriangleright$ #1}
 
@@ -51,6 +53,7 @@
 \newcommand{\lby}[1]{{\color{red}\kai #1}}
 \newcommand{\done}{{\color{red}\bf\ensuremath{\checkmark}}}
 \newcommand{\diag}{\ensuremath{\mathrm{diag}}}
+\newcommand{\svec}[2][]{\ensuremath{\boldsymbol{\langle #2\rangle_{#1}}}}
 
 % defining values of gray
 \definecolor{shadecolor}{gray}{.85}%

@@ -35,7 +35,7 @@
 
 \subsection{FL中异质数据的影响及分类}
 异质数据，也被称为非独立同分布数据（Non-IID），描述的是FL中参与方数据分布不一致的情况
-在真实的FL场景中，参与方之间的数据分布往往是不一致的，这会对基于FedAvg训练得到的全局模型性能有较大的影响。具体来说，参与方数据分布的不一致（即$\mathcal{P}_i \neq \mathcal{P}_j$, i，j表示不同的参与方），会导致参与方$P_i$的目标函数和参与方$P_j$的目标函数不一致，因此$P_i$和$P_j$之间的梯度会出现偏差 \cite{kaissis2020secure}。最后导致收敛的全局模型表现比在独立同分布场景下差很多。为了更加细致的研究异质数据对FL的影响，我们列举了典型的异质数据分类，如下所示：
+在真实的FL场景中，参与方之间的数据分布往往是不一致的，这会对基于FedAvg训练得到的全局模型性能有较大的影响。具体来说，参与方数据分布的不一致（即$\mathcal{P}_i \neq \mathcal{P}_j$, i，j表示不同的参与方），会导致参与方$\mathcal{P}_i$的目标函数和参与方$\mathcal{P}_j$的目标函数不一致，因此$\mathcal{P}_i$和$P_j$之间的梯度会出现偏差 \cite{kaissis2020secure}。最后导致收敛的全局模型表现比在独立同分布场景下差很多。为了更加细致的研究异质数据对FL的影响，我们列举了典型的异质数据分类，如下所示：
 \begin{compactitem}
     \item \textbf{数据特征分布偏差}（$\mathcal{P}_i(x) \neq \mathcal{P}_j(x)$）：对于参与方$i$和参与方$j$来说，数据集$D_i$，$D_j$中的数据特征$x$的分布$\mathcal{P}_i(x)$，$\mathcal{P}_j(x)$不一致。以手写数字识别数据集MNIST为例， 参与方$i$偏向于持有标签为1和2的数据特征，而参与方$j$偏向于持有标签为3和4的数据特征。
     \item \textbf{数据标签分布偏差}（$\mathcal{P}_i(y) \neq \mathcal{P}_j(y)$）：对于参与方$i$和参与方$j$来说，数据集$D_i$，$D_j$中的数据标签$y$的分布$\mathcal{P}_i(y)$，$\mathcal{P}_j(y)$不一致。以手写数字识别数据集MNIST为例， 参与方$i$偏向于持有标签为1和2的数据标签，而参与方$j$偏向于持有标签为3和4的数据标签。
@@ -107,8 +107,110 @@ FL+HC \cite{briggs2020federated} 致力于解决FL中面临的异质数据挑战
 \end{compactitem}
 
 \section{基于秘密共享的隐私保护计算模块}\label{4-building}
+%介绍为什么要设计这几个模块
+为了对$n$个参与方的梯度向量的共享份$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$进行安全的层次聚类操作，最首要的工作就是度量梯度向量之间的相似性，在层次聚类中，度量方式有欧式距离、曼哈顿距离以及余弦相似度，鉴于余弦相似度计算涉及到的开方和除法在共享份上的计算开销较大，本章仅考虑安全的欧式距离计算和安全的曼哈顿距离计算，最后提出了基于安全距离度量的安全层次聚类算法。
+
+\subsection{安全欧式距离计算}
+为了安全的计算共享梯度向量$\boldsymbol{\langle g_i\rangle}$和$\boldsymbol{\langle g_j\rangle}$之间的欧式距离$\Vert \boldsymbol{g_i} - \boldsymbol{g_j} \Vert_2$，我们设计了安全的欧式距离（Secure Euclidean Distance, SED）计算算法。
+首先SP和CS在本地计算$\boldsymbol{\langle z\rangle} = \boldsymbol{\langle g_i\rangle} - \boldsymbol{\langle g_j\rangle}$，然后SP和CS对于两个向量中的每一个元素协同调用$\mathcal{F}_{\text {SMul}}$，其中SP的输i入是$\boldsymbol{\langle z\rangle_0}[i]$，CS的输入是$\boldsymbol{\langle z\rangle_1}[i]$，然后SP和CS得到乘法的计算结果的共享份$\boldsymbol{\langle d\rangle}[i]$。
+接下来SP和CS在本地计算向量$\boldsymbol{\langle d\rangle}$所有元素的内部和$\sum_{i=1}^{m} \boldsymbol{\langle d\rangle}[i]$，得到欧式距离平方的共享份$\langle \textit{EDis}^2\rangle$。
+最后CS将共享份额$\langle \textit{EDis}^2\rangle_1$发送给SP，SP完成重构得到欧式距离明文$\textit{EDis}$（我们认为这个解密行为不会侵犯用户隐私，具体见安全性分析\ref{4-analysis}）。
+通过运行SED，SP和CS可以在不泄漏$\boldsymbol{g_i}$和$\boldsymbol{g_j}$每一个元素的情况下，得到梯度之间的欧式距离$\textit{EDis}$。SED算法的细节描述如算法\ref{alg1}所示。
+
+\begin{algorithm}[htbp]
+    \caption{安全欧式距离计算\\$\text{SED}(\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle}) \xrightarrow{} \textit{EDis}$}
+    \label{alg1}
+    % \renewcommand{\algorithmicrequire}{\textbf{Input:}}
+    % \renewcommand{\algorithmicensure}{\textbf{Output:}}
+    \begin{algorithmic}[1]
+    \REQUIRE SP拥有$\boldsymbol{\langle g_i\rangle_0}$和$\boldsymbol{\langle g_j\rangle_0}$, CS拥有$\boldsymbol{\langle g_i\rangle_1}$和$\boldsymbol{\langle g_j\rangle_1}$。 $\mathcal{F}_{\text {SMul}}$在文献\cite{rathee2021sirnn}中提出。
+    \ENSURE $\boldsymbol{g_i}$和$\boldsymbol{g_j}$之间的欧式距离$\textit{EDis}$。
+    % content
+    \STATE SP本地计算$\boldsymbol{\langle z\rangle_0} = \boldsymbol{\langle g_i\rangle_0} - \boldsymbol{\langle g_j\rangle_0}$
+    \STATE CS本地计算$\boldsymbol{\langle z\rangle_1} = \boldsymbol{\langle g_i\rangle_1} - \boldsymbol{\langle g_j\rangle_1}$
+    % \STATE $\mathcal{F}_{\text {SMul }}(\langle z\rangle, \langle z\rangle)$
+%    \FOR[$m$是$\boldsymbol{g_i}$的维度]{$i \in 1\:\textbf{to}\:m$} %\COMMENT{$m$ is the dimension of $\boldsymbol{g_i}$}
+%        \STATE SP和CS调用函数$\mathcal{F}_{\text {SMul}}$, 其中SP的输入是$\boldsymbol{\langle z\rangle_0}[i]$，而CS的输入是 $\boldsymbol{\langle z\rangle_1}[i]$. 运算结束后SP和CS分别得到乘法结果的共享份$\boldsymbol{\langle d\rangle_0}[i]$ 和 $\boldsymbol{\langle d\rangle_1}[i]$。
+%        % \STATE $(\lrangle EDis[i]\rangle,angle EDis[i]\rangle = \mathcal{F}_{\text {SMul }}(\langle z\rangle[i], \langle z\rangle[i])$
+%    \ENDFOR
+    \STATE SP和CS调用函数$\mathcal{F}_{\text {SMul}}$，其中输入为SP和CS持有的共享份$\boldsymbol{\langle z\rangle}$，计算得到乘法结果的共享份$\boldsymbol{\langle d\rangle}$ \COMMENT{对向量$\boldsymbol{\langle z\rangle}$中的元素逐个调用$\mathcal{F}_{\text {SMul}}$}
+    \STATE SP本地计算$\langle \textit{EDis}^2\rangle_0 = \sum_{i=1}^{m} \boldsymbol{\langle d\rangle_0}[i]$
+    \STATE CS本地计算$\langle \textit{EDis}^2\rangle_1 = \sum_{i=1}^{m} \boldsymbol{\langle d\rangle_1}[i]$
+    \STATE CS发送$\langle \textit{EDis}^2\rangle_1$给SP, SP重构$\textit{EDis}^2 = \langle \textit{EDis}^2\rangle_0 + \langle \textit{EDis}^2\rangle_1$然后开方得到$\textit{EDis}$。
+    \RETURN SP得到欧氏距离$\textit{EDis}$。
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{安全曼哈顿距离计算}
+为了安全的计算共享梯度向量$\boldsymbol{\langle g_i\rangle}$和$\boldsymbol{\langle g_j\rangle}$之间的曼哈顿距离$\norm{\boldsymbol{g_i} - \boldsymbol{g_j}}_1$，我们设计了安全的曼哈顿距离（Secure Manhattan Distance, SMD）计算算法。
+首先SP和CS在本地计算$\boldsymbol{\langle z\rangle} = \boldsymbol{\langle g_i\rangle} - \boldsymbol{\langle g_j\rangle}$，然后SP联合CS以共享份$\boldsymbol{\langle z\rangle}$为输入，调用函数$\mathcal{F}_{\text {SMul}}$，计算得到DRelu值的布尔共享份$\boldsymbol{\langle y\rangle}^{B}$。
+接着SP和CS分别计算$\boldsymbol{\langle \widetilde{y} \rangle_0}^{B} = \boldsymbol{\langle y\rangle_0}^{B}$和$\boldsymbol{\langle \widetilde{y} \rangle_1}^{B} = \boldsymbol{\langle y\rangle_1}^{B} \oplus 1$，得到DRelu结果对应的布尔取反结果$\boldsymbol{\langle \widetilde{y} \rangle}^{B}$。
+紧接着SP和CS调用两次安全多路选择器，分别以$\{\boldsymbol{\langle z\rangle}, \boldsymbol{\langle y\rangle}^{B}\}$、$\{\boldsymbol{\langle z\rangle}, \boldsymbol{\langle \widetilde{y}\rangle}^{B}\}$为输入，获取$\boldsymbol{\langle z\rangle}$中的正数集合$\boldsymbol{
+	\langle d_p\rangle}$以及负数集合$\boldsymbol{
+	\langle d_n\rangle}$。
+最后SP和CS在本地计算$\langle \textit{MDis}\rangle = \sum_{i=1}^{m}\boldsymbol{\langle d_p\rangle}[i] - \sum_{i=1}^{m}\boldsymbol{\langle d_n\rangle}[i]$，CS将结果共享份$\langle \textit{MDis}\rangle_1$发送给SP，SP完成重构得到曼哈顿距离$\textit{MDis}$。
+SMD具体的算法细节描述如算法\ref{alg2}所示。
+
+\begin{algorithm}[htbp]
+    \caption{安全曼哈顿距离计算\\$\text{SMD}(\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle}) \xrightarrow{} \textit{MDis}$}
+    \label{alg2}
+    \begin{algorithmic}[1]
+    % \renewcommand{\algorithmicrequire}{\textbf{Input:}}
+    % \renewcommand{\algorithmicensure}{\textbf{Output:}}
+    \REQUIRE SP 拥有 $\boldsymbol{\langle g_i\rangle_0}$ 和 $\boldsymbol{\langle g_j\rangle_0}$, CS 拥有 $\boldsymbol{\langle g_i\rangle_1}$ 和 $\boldsymbol{\langle g_j\rangle_1}$. $\mathcal{F}_{\text {DRelu}}$ 和 $\mathcal{F}_{\text {MUX}}$ 在文献\cite{rathee2021sirnn}中提出。
+    \ENSURE $\boldsymbol{g_i}$ 与 $\boldsymbol{g_j}$之间的曼哈顿距离$\textit{MDis}$。
+    % content
+    \STATE SP 本地计算 $\boldsymbol{\langle z\rangle_0} = \boldsymbol{\langle g_i\rangle_0} - \boldsymbol{\langle g_j\rangle_0}$
+    \STATE CS 本地计算 $\boldsymbol{\langle z\rangle_1} = \boldsymbol{\langle g_i\rangle_1} - \boldsymbol{\langle g_j\rangle_1}$
+    \STATE SP 和 CS 调用 $\mathcal{F}_{\text{DRelu}}$，其中输入为SP和CS持有的共享份$\boldsymbol{\langle z\rangle}$，计算得到DRelu值的布尔共享份$\boldsymbol{\langle y\rangle}^{B}$。
+    \STATE SP 和 CS 分别调用 $\boldsymbol{\langle \widetilde{y} \rangle_0}^{B} = \boldsymbol{\langle y\rangle_0}^{B}$ 和 $\boldsymbol{\langle \widetilde{y} \rangle_1}^{B} = \boldsymbol{\langle y\rangle_1}^{B} \oplus 1$。\COMMENT{安全的获得布尔共享份$\boldsymbol{\langle y\rangle}^{B}$的取反结果$\boldsymbol{\langle \widetilde{y} \rangle}^{B}$。}
+    % \State SP sets $\boldsymbol{\langle \widetilde{g_i}\rangle_0}$ = - $\boldsymbol{\langle g_i\rangle_0}$ and $\boldsymbol{\langle \widetilde{g_j}\rangle_0}$ = - $\boldsymbol{\langle g_j\rangle_0}$
+    % \State CS sets $\boldsymbol{\langle \widetilde{g_i}\rangle_1}$ = - $\boldsymbol{\langle g_i\rangle_1}$ and $\boldsymbol{\langle \widetilde{g_j}\rangle_1}$ = - $\boldsymbol{\langle g_j\rangle_1}$
+    % \For{$i \in [1...m]$} \Comment{$m$ is the dimension of $\boldsymbol{g_i}$}
+        \STATE SP 和 CS 调用 $\mathcal{F}_{\text{MUX}}$，其中输入为SP和CS持有的共享份$\boldsymbol{\langle z\rangle}$ 和 $\boldsymbol{\langle y\rangle}^{B}$，计算得到$\boldsymbol{\langle z\rangle}$中的正数集合$\boldsymbol{
+        \langle d_p\rangle}$。
+        \STATE SP 和 CS 调用 $\mathcal{F}_{\text{MUX}}$，其中输入为SP和CS持有的共享份 $\boldsymbol{\langle z\rangle}$ 和 $\boldsymbol{\langle \widetilde{y}\rangle}^{B}$，计算得到$\boldsymbol{\langle z\rangle}$中的负数集合$\boldsymbol{
+        \langle d_n\rangle}$
+    % \EndFor
+    \STATE SP 本地计算 $\langle \textit{MDis}\rangle_0 = \sum_{i=1}^{m}\boldsymbol{\langle d_p\rangle_0}[i] - \sum_{i=1}^{m}\boldsymbol{\langle d_n\rangle_0}[i]$ \COMMENT{$m$ 是 $\boldsymbol{g_i}$的维度}
+    \STATE CS 本地计算 $\langle \textit{MDis}\rangle_1 = \sum_{i=1}^{m}\boldsymbol{\langle d_p\rangle_1}[i] - \sum_{i=1}^{m}\boldsymbol{\langle d_n\rangle_1}[i]$
+    \STATE CS 发送 $\langle \textit{MDis}\rangle_1$ 给 SP，然后SP 重构出 $\textit{MDis} = \langle \textit{MDis}\rangle_0 + \langle \textit{MDis}\rangle_1$。
+    \RETURN SP得到曼哈顿距离$\textit{MDis}$。
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{安全的梯度层次聚类}
+%写随机梯度裁剪
+为了完成对共享份梯度集合$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$的安全层次聚类，我们将整个聚类过程划分为两个阶段：
+\begin{compactenum}
+	\item \textbf{梯度间距离矩阵计算：}这一阶段完成每个共享梯度向量$\svec{g_i}$，与其它$n-1$梯度的距离计算，得到一个距离矩阵$\{\textit{Dis}_{00}, \textit{Dis}_{01},...,\textit{Dis}_{nn}\}$，其中距离的计算过程以梯度共享份为输入，调用上述SED或SMD安全距离计算算法，在保证梯度隐私的前提下，得到明文的距离矩阵。
+	\item \textbf{基于距离矩阵的聚类过程：}在得到预先计算好的距离矩阵之后，再搭配其它层次聚类参数，比如不同的簇间距离计算方式（$avg, min\; or\; max$）以及距离阈值，完成对梯度的自底向上的层次聚类。
+\end{compactenum}
+具体的层次聚类算法细节如算法\ref{alg3}所示。
+
+\begin{algorithm}[htbp]
+	\caption{安全的梯度层次聚类算法}
+	\label{alg3}
+	\begin{algorithmic}[1]
+		\REQUIRE SP 和 CS 拥有$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$。 \COMMENT{$n$ 是参与方数量}
+		\ENSURE $l$ 个簇 $\{c_1,c_2,...,c_l \}$。
+		% content
+		\FOR{$i \gets 1\:\textbf{to}\:n$}
+		\FOR{$j \gets 1\:\textbf{to}\:n$}
+			\STATE SP 和 CS 调用$\textit{Dis}_{ij} \xleftarrow{}\text{SMD}\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle})$ (或者 $\text{SED}\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle})$), 然后SP获得距离值$\textit{Dis}_{ij}$。
+		\ENDFOR
+		\ENDFOR
+		\STATE $\{c_1,c_2,...,c_l \} \xleftarrow{} \textsc{Clustering}(\textit{Dis}_{11},...,\textit{Dis}_{nn})$ \COMMENT{基于预计算距离矩阵的层次聚类}
+		\RETURN SP和CS获得层次聚类结果 $\{c_1,c_2,...,c_l \}$。
+	\end{algorithmic}
+\end{algorithm}
+
+
 
 \section{面向异质数据的隐私保护梯度聚合方案}\label{4-framework}
+
+%option
+\section{安全性分析}\label{4-analysis}
 
 \section{实验评估}\label{4-exp}
 
