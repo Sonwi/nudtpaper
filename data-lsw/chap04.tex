@@ -110,6 +110,32 @@ FL+HC \cite{briggs2020federated} 致力于解决FL中面临的异质数据挑战
 %介绍为什么要设计这几个模块
 为了对$n$个参与方的梯度向量的共享份$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$进行安全的层次聚类操作，最首要的工作就是度量梯度向量之间的相似性，在层次聚类中，度量方式有欧式距离、曼哈顿距离以及余弦相似度，鉴于余弦相似度计算涉及到的开方和除法在共享份上的计算开销较大，本章仅考虑安全的欧式距离计算和安全的曼哈顿距离计算，最后提出了基于安全距离度量的安全层次聚类算法。
 
+为了更好的理解我们提出的安全算法，本章使用到的符号对应的描述见表\ref{table-sym}。
+
+\begin{table}
+	\centering
+	\caption{符号说明}
+	\label{table-sym}
+	\scalebox{0.95}{
+		\renewcommand{\arraystretch}{1.2}
+		\begin{tabular}{cl}
+			\hline
+			\hline
+			\textbf{符号}               & \textbf{描述}                      \\
+			\hline
+			$\boldsymbol{g_i}$                          & 参与方 $P_i$ 的本地梯度向量      \\
+			$\boldsymbol{G_x}$                          & 聚类结果中簇 $c_x$ 的全局梯度向量     \\
+			$\boldsymbol{\langle g_i\rangle}$           & $\boldsymbol{g_i}$ 的共享份，其中 \\
+			& SP 持有 $\boldsymbol{\langle g_i\rangle_0}$，CS 持有$\boldsymbol{\langle g_i\rangle_1}$ \\
+			$\mathcal{D}_i$                & 参与方 $P_i$ 的本地数据集             \\
+			$\textit{EDis}$                & 欧式距离（Euclidean distance）                        \\ 
+			$\textit{MDis}$                & 曼哈顿距离（Manhattan distance）                        \\
+			\hline
+			\hline
+		\end{tabular}
+	}
+\end{table}
+
 \subsection{安全欧式距离计算}
 为了安全的计算共享梯度向量$\boldsymbol{\langle g_i\rangle}$和$\boldsymbol{\langle g_j\rangle}$之间的欧式距离$\Vert \boldsymbol{g_i} - \boldsymbol{g_j} \Vert_2$，我们设计了安全的欧式距离（Secure Euclidean Distance, SED）计算算法。
 首先SP和CS在本地计算$\boldsymbol{\langle z\rangle} = \boldsymbol{\langle g_i\rangle} - \boldsymbol{\langle g_j\rangle}$，然后SP和CS对于两个向量中的每一个元素协同调用$\mathcal{F}_{\text {SMul}}$，其中SP的输i入是$\boldsymbol{\langle z\rangle_0}[i]$，CS的输入是$\boldsymbol{\langle z\rangle_1}[i]$，然后SP和CS得到乘法的计算结果的共享份$\boldsymbol{\langle d\rangle}[i]$。
@@ -181,23 +207,25 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 
 \subsection{安全的梯度层次聚类}
 %写随机梯度裁剪
-为了完成对共享份梯度集合$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$的安全层次聚类，我们将整个聚类过程划分为两个阶段：
+为了完成对共享份梯度集合$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$的安全层次聚类，我们将整个聚类过程划分为三个阶段：
 \begin{compactenum}
-	\item \textbf{梯度间距离矩阵计算：}这一阶段完成每个共享梯度向量$\svec{g_i}$，与其它$n-1$梯度的距离计算，得到一个距离矩阵$\{\textit{Dis}_{00}, \textit{Dis}_{01},...,\textit{Dis}_{nn}\}$，其中距离的计算过程以梯度共享份为输入，调用上述SED或SMD安全距离计算算法，在保证梯度隐私的前提下，得到明文的距离矩阵。
+	\item \textbf{梯度的随机降维：}考虑到神经网络梯度的维度较高，而对梯度的层次聚类不使用全部维度也能保证较高的准确性（实验验证参考\ref{4-exp}），我们对梯度进行了随机降维操作，随机抽取一部分元素，对所有的梯度向量 $\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$ 抽取相同下标的一部分元素，得到降维后的梯度向量 $\{\dot{\boldsymbol{\langle g_1\rangle}}, \dot{\boldsymbol{\langle g_2\rangle}},...,\dot{\boldsymbol{\langle g_n\rangle}} \}$。
+	\item \textbf{梯度间距离矩阵计算：}这一阶段完成每个共享梯度向量$\dot{\svec{g_i}}$，与其它$n-1$个梯度的距离计算，得到一个距离矩阵$\{\textit{Dis}_{11}, \textit{Dis}_{12},...,\textit{Dis}_{nn}\}$，其中距离的计算过程以梯度共享份为输入，调用上述SED或SMD安全距离计算算法，在保证梯度隐私的前提下，得到明文的距离矩阵。
 	\item \textbf{基于距离矩阵的聚类过程：}在得到预先计算好的距离矩阵之后，再搭配其它层次聚类参数，比如不同的簇间距离计算方式（$avg, min\; or\; max$）以及距离阈值，完成对梯度的自底向上的层次聚类。
 \end{compactenum}
 具体的层次聚类算法细节如算法\ref{alg3}所示。
 
 \begin{algorithm}[htbp]
-	\caption{安全的梯度层次聚类算法}
+	\caption{安全的梯度层次聚类算法 \\ $\text{SHC}(\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}) \rightarrow \{c_1,c_2,...,c_l \}$}
 	\label{alg3}
 	\begin{algorithmic}[1]
-		\REQUIRE SP 和 CS 拥有$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$。 \COMMENT{$n$ 是参与方数量}
+		\REQUIRE SP 和 CS 拥有$\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$。 \COMMENT{$n$ 表示参与方数量}
 		\ENSURE $l$ 个簇 $\{c_1,c_2,...,c_l \}$。
 		% content
+		\STATE SP 和 CS 对梯度共享份 $\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \}$ 进行随机降维得到：\\ $\{\dot{\boldsymbol{\langle g_1\rangle}}, \dot{\boldsymbol{\langle g_2\rangle}},...,\dot{\boldsymbol{\langle g_n\rangle}} \}$
 		\FOR{$i \gets 1\:\textbf{to}\:n$}
 		\FOR{$j \gets 1\:\textbf{to}\:n$}
-			\STATE SP 和 CS 调用$\textit{Dis}_{ij} \xleftarrow{}\text{SMD}\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle})$ (或者 $\text{SED}\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle})$), 然后SP获得距离值$\textit{Dis}_{ij}$。
+			\STATE SP 和 CS 调用$\textit{Dis}_{ij} \xleftarrow{}\text{SMD}(\dot{\boldsymbol{\langle g_i\rangle}}, \dot{\boldsymbol{\langle g_j\rangle}})$ (或者 $\text{SED}\dot{\boldsymbol{\langle g_i\rangle}}, \dot{\boldsymbol{\langle g_j\rangle}})$), 然后SP获得距离值$\textit{Dis}_{ij}$。
 		\ENDFOR
 		\ENDFOR
 		\STATE $\{c_1,c_2,...,c_l \} \xleftarrow{} \textsc{Clustering}(\textit{Dis}_{11},...,\textit{Dis}_{nn})$ \COMMENT{基于预计算距离矩阵的层次聚类}
@@ -206,8 +234,73 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 \end{algorithm}
 
 
-
 \section{面向异质数据的隐私保护梯度聚合方案}\label{4-framework}
+基于\ref{4-building}节设计的相关安全计算模块，本节介绍我们设计的面向异质数据的隐私保护梯度聚合方案，在FL+HC\cite{briggs2020federated}的基础上，赋予了完全的梯度隐私保护能力。
+本节首先介绍对方案的概述，然后具体阐述方案的四个阶段：初始化阶段、本地梯度的生成和编码阶段、梯度的安全聚和阶段以及梯度的安全分发阶段。在整个方案中，用户上传的梯度信息以及聚合生成的全局梯度，都不会被SP以及CS窃取，实现了对梯度的完全隐私保护。
+
+\subsection{方案概述}
+参与方$P_i$在本地生成梯度之后，利用文献\cite{hao2021efficient}的方法，我们只用向SP上传一份梯度$\svec{g_i}$，另一份梯度由$P_i$和CS利用相同的随机数种子（在初始化阶段协商），借助伪随机算法PRG生成，以此减少一半的通信开销。
+在梯度的聚合阶段，SP和CS在聚类轮次执行一次安全的梯度层次聚类，然后根据聚类结果来聚合梯度，对于聚类轮次之前的轮次，所有的参与方被视为一个簇。
+最后SP和CS完成对聚合梯度的安全分发，保证全局梯度的隐私。
+
+\subsection{具体方案}
+本节具体介绍方案涉及到的四个阶段。%TODO add frame flow.
+
+\subsubsection{初始化阶段}
+本阶段在整个方案中只会被执行一次。利用文献\cite{diffie2022new}提出的Diffie-Hellman密钥协商协议，每个参与方$P_i$与CS协商一个私有的种子密钥$k_i^{seed}$。这个密钥在本地梯度的上传以及全局梯度的分发过程中，保证参与方$P_i$与CS能够非交互的生成同样的随机向量，具体细节见阶段\ref{local}和阶段\ref{distribution}。
+
+\subsubsection{本地梯度的生成和编码阶段}\label{local}
+本阶段描述参与方$P_i$如何生成本地梯度的共享份$\svec{g_i}$，包括上传给SP的共享份$\svec[0]{g_i}$，以及与CS协同生成的共享份$\svec[1]{g_i}$。
+
+首先，参与方$P_i$利用收到的全局梯度更新本地模型，再使用本地数据$\mathcal{D}_i$训练模型得到本地的原始更新，是一个浮点数梯度向量$\overline{\bs{g_i}}$。
+为了将浮点梯度$\overline{\bs{g_i}}$表示为环 $\mathbb{Z}_p$（$p=2^l$，$l$表示比特长度）上的共享份，我们首先要对这个向量进行定点数编码。
+对于浮点数 $v$ 来说，我们使用的定点编码操作如下：
+\begin{equation}
+	Encode(v) = \lfloor 2^s \times v\rfloor \;\text{mod}\;p
+\end{equation}
+其中 $\lfloor v\rfloor$表示小于等于浮点数 $v$ 的最大整数值，而 $s$ 表示定点数的精度。
+对浮点向量 $\overline{\bs{g_i}}$ 中的每个元素都进行定点编码，于是就得到了本地梯度的定点表示：
+\begin{equation}
+	\boldsymbol{g_i} = Encode(\overline{\boldsymbol{g_i}})
+\end{equation}
+然后参与方$P_i$使用PRG技术，利用随机数种子 $k_i^{seed}$生成随机向量 $\bs{r_i}$，然后将属于SP的梯度共享份 $\svec[0]{g_i} = \bs{g_i} - \bs{r_i}$ 发送给SP。为了提升通信效率，我们让CS在本地使用同样的随机数种子 $k_i^{seed}$ 生成相同的随机变量 $\bs{r_i}$，所以属于CS的梯度共享份为 $\svec[1]{g_i} = \bs{r_i}$，这种方式减少了本方案在梯度上传过程中一半的通信开销。
+
+\subsubsection{梯度的安全聚合阶段}
+在FL+HC \cite{briggs2020federated}中，会在特定的轮次 $t$ 进行梯度的层次聚类操作，在轮次 $t$ 之前，所有的参与方被视为一个簇，联合生成一个全局梯度（与FedAvg \cite{mcmahan2017communication} 一致）。当进行到第$t$轮时，我们对所有的梯度执行安全的层次聚类操作：
+\begin{equation}
+	\{c_1,c_2,...,c_l \} \leftarrow \text{SHC}(\{\boldsymbol{\langle g_1\rangle}, \boldsymbol{\langle g_2\rangle},...,\boldsymbol{\langle g_n\rangle} \})
+\end{equation}
+得到聚类结果$\{c_1,c_2,...,c_l \}$后，对用一个簇中的所有参与方，进行线性聚合操作：
+\begin{equation}
+	\boldsymbol{\langle G_x\rangle} = \frac{\sum_{j \in c_x}\boldsymbol{\langle g_j\rangle}}{n_x}
+\end{equation}
+其中$j$ 表示簇 $c_x$ 中的参与方，$n_x$ 表示簇 $c_x$ 中参与方的数量，$\svec{G_x}$ 表示聚合之后的全局梯度，以此我们就得到了所有的全局聚合梯度的共享份 $\{\svec{G_1},\svec{G_2},...,\svec{G_l}\}$。
+
+
+\subsubsection{梯度的安全广播阶段}\label{distribution} 
+为了保证全局梯度 $\svec{G_x}$ 的隐私，我们没有选择让SP和CS重构出$\bs{G_x}$再广播给用户。而是设计了安全的参数分发算法，在不提升通信开销的同时，保证了全局梯度的隐私，算法细节描述如算法\ref{alg4}所示。首先参与方$P_i$ 和 CS利用$k_i^{seed}$协同相同的随机变量$\bs{r_i^{\prime}}$，然后CS使用该随机变量对梯度共享份进行扰动得到 $\svec[0]{\widehat{G_x}} = \svec[0]{G_x} + \bs{r_i^{\prime}}$，紧接着CS将 $\svec[0]{\widehat{G_x}}$ 发送给SP，SP重构扰动之后的全局梯度 $\boldsymbol{\widehat{G_x}} = \boldsymbol{\langle G_x\rangle_0} + \boldsymbol{\langle \widehat{G_x}\rangle_1}$，最后将 $\boldsymbol{\widehat{G_x}}$ 发送给 参与方$P_i$，$P_i$利用$r_i^{\prime}$消除扰动得到$\boldsymbol{G_x}$。
+
+参与方$P_i$拿到全局梯度$\bs{G_x}$后，对梯度进行定点数解码操作：
+\begin{equation}
+	\bs{\overline{G_x}} = Decode(\bs{G_x})
+\end{equation}
+其中解码操作首先将元素$v$视为浮点数，然后除以$2^s$，得到对应的梯度浮点数。
+
+\begin{algorithm}[htbp]
+	\caption{安全的全局梯度广播}
+	\label{alg4}
+	\begin{algorithmic}[1]
+		\REQUIRE SP 和 CS 拥有参与方 $P_i$的全局梯度$\boldsymbol{\langle G_x\rangle}$.
+		% clustering results $\{c_1,c_2,...,c_l\}$ and global gradients $\{\boldsymbol{\langle G_1\rangle,...,\langle G_l\rangle\}}$ \Comment{$l$ is the number of clusters}
+		\ENSURE 参与方$P_i$ 获得相应的全局梯度$\boldsymbol{G_x}$
+		% \Comment{$x$ indicates the cluster to which $P_i$ belongs}
+		% content
+		\STATE $P_i$ 与 CS 利用相同的随机数种子生成 $\boldsymbol{r_i}$ = PRG($k_i^{seed}$) \COMMENT{相同的$k_i^{seed}$ 保证了$\boldsymbol{r_i}$ 在 $P_i$ 和 CS之间的一致性}
+		\STATE CS 扰动$\boldsymbol{\langle G_x\rangle_1}$:\\ $\boldsymbol{\langle \widehat{G_x}\rangle_1} = \boldsymbol{\langle G_x\rangle_1} + \boldsymbol{r_i}$
+		\STATE CS 发送$\boldsymbol{\langle \widehat{G_x}\rangle_1}$ 给 SP, 然后 SP 重构扰动后的全局梯度 $\boldsymbol{\widehat{G_x}}$：\\ $\boldsymbol{\widehat{G_x}} = \boldsymbol{\langle G_x\rangle_0} + \boldsymbol{\langle \widehat{G_x}\rangle_1}$
+		\STATE SP 发送 $\boldsymbol{\widehat{G_x}}$ 到 $P_i$, 然后 $P_i$ 消除全局梯度的扰动：\\$\boldsymbol{G_x} = \boldsymbol{\widehat{G_x}} - \boldsymbol{r_i}$
+	\end{algorithmic}
+\end{algorithm}
 
 %option
 \section{安全性分析}\label{4-analysis}
