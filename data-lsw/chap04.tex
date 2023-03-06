@@ -290,7 +290,7 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 其中解码操作首先将元素$v$视为浮点数，然后除以$2^s$，得到对应的梯度浮点数。
 
 \begin{algorithm}[htbp]
-	\caption{安全的全局梯度广播}
+	\caption{安全的全局梯度广播 \\$\text{SGB}(\boldsymbol{\langle G_x\rangle}) \rightarrow \boldsymbol{G_x}$}
 	\label{alg4}
 	\begin{algorithmic}[1]
 		\REQUIRE SP 和 CS 拥有参与方 $P_i$的全局梯度$\boldsymbol{\langle G_x\rangle}$.
@@ -307,7 +307,7 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 
 %option
 \section{安全性分析}\label{4-analysis}
-本方案的目标是保护参与方本地数据的隐私，以及聚合之后的全局梯度的隐私。本节首先给出安全计算模块的安全性分析，然后再对面向异质数据的隐私保护梯度方案给出安全性分析。
+本方案的目标是保护参与方本地数据的隐私，以及聚合之后的全局梯度的隐私，本节对安全计算模块SED、SMD、SHC以及安全的全局梯度广播协议进行安全性分析，其中敌对方为半诚实的服务器SP和CS。
 
 为了证明本方案的正确性，本节首先给出半诚实模型下的安全性定义，如定义\ref{sec-def}所示。
 
@@ -350,11 +350,11 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 \end{proof}
 
 \begin{theorem}
-	本章提出的安全全局梯度广播协议\ref{alg4}在半诚实模型下是安全的。
+	本章提出的安全全局梯度广播协议\ref{alg4}（SGB）在半诚实模型下是安全的。
 \end{theorem}
 
 \begin{proof}
-	在安全的全局梯度广播协议中，SP收到的真实视图是$\{\boldsymbol{\langle \widehat{G_x}\rangle_1}, \boldsymbol{\widehat{G_x}}\}$，其中$\boldsymbol{\langle \widehat{G_x}\rangle_1}$是由共享份和随机向量相加得到，$\boldsymbol{\widehat{G_x}}$ 是由共享份和扰动过后的共享份相加得到，由引理\ref{l2}可知其都是随机均匀分布的，因此SP收到的真实视图与模拟器$\mathcal{S}$随机生成的模拟视图，是计算不可区分的。CS获得的真实视图是 $\{\boldsymbol{\langle G_x\rangle_1}, \bs{r_i}, \boldsymbol{\langle \widehat{G_x}\rangle_1}\}$，其中$\boldsymbol{\langle G_x\rangle_1}$是共享份，$\bs{r_i}$ 是生成的随机向量，都是随机且均匀分布的，而 $\boldsymbol{\langle \widehat{G_x}\rangle_1} = \boldsymbol{\langle G_x\rangle_1} + \bs{r_i}$ 由引理\ref{l2} 可知，其也是随机均匀分布的，所以SP和CS都无法区分真实视图与模拟器$\mathcal{S}$生成的模拟视图，因此安全的梯度广播协议在半诚实模型下是安全的。
+	在SGB协议中，SP收到的真实视图是$\{\boldsymbol{\langle \widehat{G_x}\rangle_1}, \boldsymbol{\widehat{G_x}}\}$，其中$\boldsymbol{\langle \widehat{G_x}\rangle_1}$是由共享份和随机向量相加得到，$\boldsymbol{\widehat{G_x}}$ 是由共享份和扰动过后的共享份相加得到，由引理\ref{l2}可知其都是随机均匀分布的，因此SP收到的真实视图与模拟器$\mathcal{S}$随机生成的模拟视图，是计算不可区分的。CS获得的真实视图是 $\{\boldsymbol{\langle G_x\rangle_1}, \bs{r_i}, \boldsymbol{\langle \widehat{G_x}\rangle_1}\}$，其中$\boldsymbol{\langle G_x\rangle_1}$是共享份，$\bs{r_i}$ 是生成的随机向量，都是随机且均匀分布的，而 $\boldsymbol{\langle \widehat{G_x}\rangle_1} = \boldsymbol{\langle G_x\rangle_1} + \bs{r_i}$ 由引理\ref{l2} 可知，其也是随机均匀分布的，所以SP和CS都无法区分真实视图与模拟器$\mathcal{S}$生成的模拟视图，因此安全的梯度广播协议在半诚实模型下是安全的。
 \end{proof}
 
 \section{实验评估}\label{4-exp}
@@ -368,7 +368,7 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 	\item \textbf{MNIST数据集：}其训练集中包含 $60,000$ 张手写数字图片，图片内容是0-9的手写数字（共十类），每张图片有 $28 \times28$ 个像素，测试集中含有 $10,000$ 张格式相同的图片。
 	\item \textbf{CIFAR-10数据集：}其训练集包含 $60,000$ 张彩色图片，每张图片大小为 $32 \times 32$ 个像素，其中 $50,000$ 张图片用于训练，$10,000$张图片用于测试，一共有十类图片，每类图片 $6000$ 张。
 \end{compactitem}
-对于MNIST数据集分类任务的训练模型网络，我们选择了最简单的两层全连接网络，其中第一层的参数规模为 $724 \times 100$，第二层的参数规模为 $100 \times 10$，一共大概 $80k$ 个参数。对于CIFAR-10数据集分类任务，我们使用了一个简单的卷积神经网络，来自于TensorFlow的官网教程 \footnote{web url: https://www.tensorflow.org/tutorials/images/cnn?hl=en}，其中包含三层卷积网络层和两层全连接层，一共有大约 $123k$ 个参数。
+对于MNIST数据集分类任务的训练模型网络，我们选择了最简单的两层全连接网络，其中第一层的参数规模为 $724 \times 100$，第二层的参数规模为 $100 \times 10$，一共大概 $80k$ 个参数。对于CIFAR-10数据集分类任务，我们使用了一个简单的卷积神经网络，来自于TensorFlow的官网教程 \footnote{web URL: https://www.tensorflow.org/tutorials/images/cnn?hl=en}，其中包含三层卷积网络层和两层全连接层，一共有大约 $123k$ 个参数。
 
 \subsubsection{异质数据（Non-IID）配置}
 %TODO 描述一下和前面三种分类的对应关系
@@ -465,6 +465,6 @@ SMD具体的算法细节描述如算法\ref{alg2}所示。
 
 
 \section{本章小结}\label{4-conclusion}
-本章提出了一个新颖的联邦学习框架，在保证参与方本地数据隐私和全局梯度隐私的前提下，实现了较高的异质数据联合训练准确率。本方案提出了高效的基于秘密共享的安全层次聚类（SHC），除此之外，我们在真实数据集上对两种极致的异质数据分布进行了实验，证明了本方案在保证隐私的同时提升了异质数据联合训练的准确率。
+本章提出了一个新颖的联邦学习框架，在保证参与方本地数据隐私和全局梯度隐私的前提下，实现了较高的异质数据联合训练准确率。本方案提出了高效的基于秘密共享的安全计算模块，其中包括SED、SMD、SHC和SGB。除此之外，我们在真实数据集上对两种极致的异质数据分布进行了实验，证明了本方案在保证隐私的同时提升了异质数据联合训练的准确率。
 
-本方案改造自FL+HC\cite{briggs2020federated}，实现了对梯度的完全隐私保护，但是本方案也继承了FL+HC的缺点，层次聚类的结果对全局模型的影响较大。还有一个限制是我们的框架需要两个不共谋的服务器，要实现单服务器的安全层次聚类更加有挑战性的安全计算协议设计，同时也会遇到更多的性能瓶颈，我们将这些问题的解决作为未来的工作方向。
+本方案改造自FL+HC\cite{briggs2020federated}，实现了对梯度的完全隐私保护，但是本方案也继承了FL+HC的缺点，即层次聚类的结果对全局模型的影响较大。还有一个限制是我们的框架需要两个不共谋的服务器，要实现单服务器的安全层次聚类更加有挑战性的安全计算协议设计，同时也会遇到更多的性能瓶颈，我们将这些问题的解决作为未来的工作方向。

@@ -8,6 +8,10 @@
 \RequirePackage{fancyvrb}
 \RequirePackage[chapter]{algorithm}
 \RequirePackage{algorithmic}
+\RequirePackage{wasysym}
+\RequirePackage{multirow}
+\RequirePackage{stmaryrd}
+\RequirePackage{framed}
 
 % 配置Lstlisting
 \lstset{
@@ -55,6 +59,7 @@
 \newcommand{\diag}{\ensuremath{\mathrm{diag}}}
 \newcommand{\svec}[2][]{\ensuremath{\boldsymbol{\langle #2\rangle_{#1}}}}
 \newcommand{\bs}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\ctx}[2][]{\ensuremath{\llbracket #2\rrbracket_{#1}}}
 
 % defining values of gray
 \definecolor{shadecolor}{gray}{.85}%

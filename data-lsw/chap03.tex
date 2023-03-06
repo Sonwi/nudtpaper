@@ -1,17 +1,199 @@
 \chapter{面向拜占庭容错的隐私保护梯度聚合技术}
 
 \section{引言}
+联邦学习（Federated Learning, FL）是目前主流的注重参与方数据隐私的分布式机器学习框架\cite{kairouz2019advances}，它允许参与方不直接泄露本地数据的前提下，在FL服务提供商的协调下，完成联合全局模型的训练。
+正是由于这种对原始数据的隐私保护，FL实现了一定程度上的数据可用不可见，也被许多企业在实际应用中落地。
+比如谷歌使用FL打造了针对移动端用户的联合输入法预测系统\cite{hard2018federated}，可以给用户提供更加精准的输入词推荐；微众银行基于FL部署了用户风险预测系统，更好的服务于对用户的风险评估服务。
+粗略地说，FL主要有以下三个核心步骤：$(\rm \romannumeral1)$ FL服务提供商首先初始化随机的全局模型参数，然后分发给各个参与方；$(\rm \romannumeral2)$ 参与方收到全局模型参数后，将参数应用到本地，再使用本地数据集进行训练，更新本地参数，最后把更新后的参数（或梯度）上传给FL服务提供商；$(\rm \romannumeral3)$ 服务提供商接收到符合条件的参数数量之后，对参数进行聚合，生成新一轮的全局模型参数。
+以上三个步骤一直被重复，直到联合训练的全局模型收敛。
 
-\section{预备知识}
+尽管避免了对用户数据的直接泄露，相关文献\cite{kairouz2019advances, mothukuri2021survey, geiping2020inverting} 指出FL仍然面临着安全威胁，最典型的是针对用户梯度对用户数据进行反向推理的推理攻击 \cite{geiping2020inverting}，以及可以操控参与方上传恶意参数更新的拜占庭攻击\cite{kairouz2019advances, mothukuri2021survey}。
 
-\section{问题描述}
+（1）推理攻击：攻击的敌对方是不诚实的FL服务提供商，在接收到用户上传的参数之后，文献\cite{geiping2020inverting}指出FL提供商可以通过对参数进行余弦相似度的度量，再结合梯度的正负信息，反推出用户的隐私数据，这种攻击方式的存在也就意味着FL原来直接上传参数的方式，已经不能完全保证用户隐私了，需要使用进一步的隐私增强策略来保证用户隐私。%TODO Details
 
-\section{拜占庭鲁棒梯度聚合算法}
+（2）拜占庭攻击：攻击的敌对方是可以操纵参与方的敌手 $\mathcal{A}$，在用户进行本地训练以及参数上传的阶段，敌手$\mathcal{A}$可以通过刻意构造所上传的参数，达到扰动或者控制全局模型收敛方向，或者侵犯其它参与方数据隐私的目的\cite{kairouz2019advances}。值得注意的是，文献\cite{blanchard2017machine}指出尽管只有一个参与方被敌手$\mathcal{A}$所控制，也能破坏整个FL流程的正常运行。
 
-\section{隐私保护的拜占庭梯度聚合方案}
+正是由于上述攻击行为对现有FL方案的隐私性和安全性提出的挑战，所以一个安全可信的FL系统，需要同时做到：$(\rm \romannumeral1)$进一步保护用户数据的隐私，避免隐私数据被服务提供商窃取；$(\rm \romannumeral2)$保证服务提供商聚合参数时的鲁棒性，剔除不良参数的影响。
 
-\section{理论分析}
+要同时实现这两个目标，需要面对棘手的挑战。
+一些前沿的提高FL拜占庭鲁棒性的方案\cite{blanchard2017machine, guerraoui2018hidden, yin2018byzantine}都假设聚合服务器是完全诚实的，也就是说，它不会从上传的用户模型参数中推断任何用户的隐私数据信息。
+因此，这些工作都直接让用户上传原始的模型参数，然后在此之上构建拜占庭鲁棒的聚合方案。例如，Krum\cite{blanchard2017machine}基于用户模型参数在欧氏空间的相似性实现了一定程度上的拜占庭鲁棒性，当上传的用户参数为明文时，计算效率尚可接受。但是如果需要处理加密或者混淆过后的用户模型参数，计算可行性和计算效率将成为方案的瓶颈。
+%然而，当参数被加密时，建立防御将是一个重大挑战，这意味着在密码文本域下识别拜占庭用户。
 
-\section{实验评估}
+学者们提出了一系列工作\cite{liu2021privacy, dong2021flod, nguyen2022flame, hao2021efficient, so2020byzantine}，致力于同时实现提升用户数据隐私以及聚合方案的拜占庭鲁棒性。
+PEFL\cite{liu2021privacy} 使用同态加密（Homomorphic Encryption，HE）将用户本地梯度 $G_i$ 加密之后再上传到服务提供商，由两个半诚实非共谋的服务器完成鲁棒聚合，为了实现一些非线性操作，PEFL设计的四个安全计算协议都需要将 $G_i$ 使用随机数扰动之后，再进行解密操作。这里对于一个梯度 $G_i$ 的所有维度都使用相同的随机数进行扰动，这会泄露梯度数据的数据分布，存在隐私泄露的风险。FLOD \cite{dong2021flod} 和 SecureFL \cite{hao2021efficient} 方案都是基于FLTrust \cite{cao2020fltrust} 的根数据集（root dataset）思想，即服务提供商收集一小部分用户数据，用于判断和过滤恶意参数，显然这种方法会侵犯参与方的隐私。FLAME \cite{nguyen2022flame} 精心设计了拜占庭鲁棒聚合算法，并且结合ABY\cite{demmler2015aby} 以及隐私保护DBSCAN算法 \cite{bozdemir2021privacy} 实现了对用户梯度的隐私保护，但是其设计的鲁棒聚合算法涉及到安全两方计算（Secure 2-Party Computation，2PC）中开销较大的计算，其中包括梯度间余弦相似度的度量，以及共享份梯度的聚类操作。
+表\ref{cmp}在隐私性、鲁棒性和效率上对已有工作和我们的工作进行了粗略的对比。
 
-\section{本章小结}
+针对以上研究现状，本章提出了一个密文计算友好（即不涉及到开销较大的密文操作）的拜占庭鲁棒聚合方案，
+并结合多方同态加密（Multiparty Homomorphic Encryption，MHE）实现了保证用户梯度隐私的同时，高效的在密文上剔除拜占庭用户的影响，具体来讲，我们的贡献如下：
+\begin{compactenum}
+	\item  我们提出了一个新颖的面向拜占庭容错的隐私保护联邦学习框架（Privacy-preserving and Byzantine-robust FL framework，PBFL），同时保证了用户数据的隐私和聚合后的全局梯度的隐私不被服务提供商窃取。同时，我们还避免了PEFL\cite{liu2021privacy}中存在的梯度数据分布泄露的问题。
+	\item 我们设计了高效的、密文计算友好的拜占庭鲁棒聚合方案，它以用户参数到上一轮全局参数欧式距离的中值为基准，动态调节参与方每轮聚合的权重，使得每次聚合把恶意梯度的聚合权重降到可忽略的程度，充分发挥良性参数的作用。
+	\item 我们对提出的方案在真实数据集上做了测试，实验表明我们可以有效的防御典型的拜占庭攻击，包括高斯攻击和标签转换攻击。除此之外，我们对方案进行了完备的安全性证明和收敛性证明，从理论上说明了方案可以在保护用户数据隐私的同时，实现对拜占庭节点的容错聚合。
+\end{compactenum}
+
+\begin{table}
+	\centering
+	\caption{Comparison with prior works on properties necessary for FL}
+	\label{cmp}
+	 \scalebox{0.90}{
+		\renewcommand{\arraystretch}{1.2}
+		\begin{tabular}{l|cccc}
+			\toprule
+			% \hline
+			% \LEFTcircle \Circle \CIRCLE 
+			\textbf{Proposed Schemes}               & \textbf{Approach}      & \textbf{Privacy}    &\textbf{Robustness} &\textbf{Efficiency}              \\
+			\midrule
+			PEFL \cite{liu2021privacy}                   & Custom Aggregation + HE & \CIRCLE\LEFTcircle     &\CIRCLE\LEFTcircle     &\CIRCLE\LEFTcircle                       \\
+			FLAME \cite{nguyen2022flame}                   & Custom Aggregation + 2PC & \CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle     &\LEFTcircle\Circle                       \\
+			FLOD \cite{dong2021flod}                   & FLTrust \cite{cao2020fltrust} + 2PC & \CIRCLE\Circle     &\CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle                       \\
+			SecureFL \cite{hao2021efficient}                   & FLTrust \cite{cao2020fltrust} + 2PC & \CIRCLE\Circle     &\CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle                       \\
+			Our PBFL                   & Custom Crypto-friendly Aggregation + MHE & \CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle     &\CIRCLE\CIRCLE                       \\
+			\bottomrule
+			% \hline
+		\end{tabular}
+		 }
+\end{table}
+
+本章的组织结构如下：在第\ref{bg}节和第\ref{ps}节我们分别介绍了本章方案涉及到的一些预备知识和方案要解决的问题描述；
+然们我们在第\ref{friendly-alg}节和第\ref{PBFL}节对提出的面向拜占庭容错的隐私保护梯度聚合方案进行了细致的描述；接下来在第\ref{ana}节对方案就行了安全性分析、收敛性分析以及效率分析；在第\ref{con}节对本方案进行了实验评估；最后在第\ref{con}节对本方案进行了总结。
+
+\section{预备知识}\label{bg}
+
+\subsection{联邦学习}
+联邦学习（Federated Learning，FL）是目前前言的分布式机器学习方案，它可以让许多参与方（比如终端用户）在中央服务器的调度下，完成联合的机器学习或者深度学习训练，同时保证参与方数据留存在本地。在FL中，中央服务器负责整个训练任务的初始化、以及训练过程中用户参数的聚合以及分发；而参与方负责使用本地数据优化收到的全局模型参数，然后将更新之后的参数上传给中央服务器。
+
+本方案的训练任务集中在经典的有监督学习任务，即图像分类的学习任务。
+具体来说，参与方 $P_i$ 持有本地隐私数据集 $D_i=\{(x_j, y_j);j=1,2,...,T\}$，其中$x_j\in\mathbb{R}^v$表示一个$v$维度的图像向量，而 $y_i$ 是该图像的真实标签。
+在训练轮次 $t$ 的开端，服务器会把全局参数 $W_g$ 分发给参与到训练的参与方，每个参与方 $P_i$ 将收到的全局参数 $W_g$ 应用到本地模型，然后使用本地数据集 $D_i$ 本地计算loss函数，计算方式如下：
+\begin{equation}
+	\mathcal{L}_f(D_i, W_g) \leftarrow\frac{1}{|D_i|}\sum\limits_{(x_j,y_j)\in D_i}\mathcal{L}_f(x_j,y_j,W_g),
+\end{equation}
+其中$\mathcal{L}_f(x_j,y_j,W_g)$是计算模型输出以及图像真实标签之间差异的loss值。
+FL的目标是通过最小化全局loss函数的方式，获得最优的全局模型参数。
+在本方案中，我们利用随机梯度下降算法（stochastic gradient descent，SGD）来更新本地模型参数。
+即每个参与方对于$D_i$中的小批量数据$D_i^k \in D_i$，执行如下计算：
+\begin{equation}
+	W^{k+1}\leftarrow W^{k}-\eta\nabla\mathcal{L}_f(D_i^k,W^k)
+\end{equation}
+其中$k$代表本地训练周期。在本地参数更新完成之后，参与方$P_i$会获取到本轮更新的全局参数 $W_i^t$，然后将其发送给中央聚合服务器，等待服务器完成线性聚合：
+\begin{equation}
+	W_g^{t}\leftarrow\sum_{i=1}^{N}\frac{1}{N}W_i^{t},
+\end{equation}
+其中 $N$ 表示参与方的数量。参与方和服务器重复上述过程，直到全局模型收敛。
+
+\subsection{非目标性的拜占庭攻击}
+在我们的拜占庭威胁模型中，敌手 $\mathcal{A}$ 可以控制一部分FL的参与方，这些参与方也被称为拜占庭用户。
+这些拜占庭用户可以不向服务器发送更新的模型参数，而是发送任意的或精心构建的参数，来影响全局模型的准确率。
+本方案考虑了两种典型的非目标性的拜占庭攻击，即模型毒化攻击（Model poisoning attack）和数据毒化攻击（Data poisoning attack），具体描述如下：
+\begin{compactitem}
+	\item \textbf{模型毒化攻击：}这种攻击行为发生在本地用户的训练阶段，敌手 $\mathcal{A}$ 可以直接更改用户需要上传的模型参数，比如说可以胁迫参与方替换上传的参数为随机选取的高斯噪声，也被称为高斯攻击（Gaussian attack，GA）\cite{blanchard2017machine, dong2021flod}，GA可以导致全局模型的大幅波动，从而严重影响全局模型的收敛。
+	\item  \textbf{数据毒化攻击：}这种攻击通常发生在参与方数据的收集阶段，敌手$\mathcal{A}$ 可以修改用户收集到的本地数据，将数据的真实标签修改为错误的虚拟标签。比如说对于一张手写数字图片，其真实内容和标签都是5，而敌手$\mathcal{A}$可以保持图像数据特征不变，将标签改为9，从而影响全局模型的准确率，这种具体的攻击也被称为标签转换攻击（Label-flipping attack，LFA）\cite{kairouz2019advances, dong2021flod, liu2021privacy}。这种攻击可以破坏全局模型收敛的方向，从而大幅降低全局模型的准确率。
+\end{compactitem}
+
+\subsection{多方同态加密}
+我们的隐私保护计算模块基于的是一种全同态加密（Cheon-Kim-Kim-Song，CKKS\cite{cheon2017homomorphic}）的修订方案，即多方同态加密（Multiparty Homomorphic Encryption，MHE）。
+在MHE中，可以由多个参与方本地持有私钥，然后在不泄露本地私钥的前提下，协同生成一份公钥。
+而密文的解密操作则需要所有持有私钥的参与方一起完成。
+我们选择使用MHE构建本方案的理由如下：
+$(\rm \romannumeral1)$ 该方案原生支持浮点数计算，这非常契合网络模型参数中都为浮点数的场景。
+$(\rm \romannumeral2)$ 该方案基于环上的困难问题（ring learning with errors，RLWE）搭建，可以让我们的方案实现抗量子攻击（post-quantum attacks）。
+$(\rm \romannumeral3)$ 其密文上的计算可以做到灵活且非交互。
+$(\rm \romannumeral4)$ 其支持安全的合作公钥切换操作，即在不解密一个密文的前提下，完成对密文的重加密（即用给定的另一份公钥加密），接下来我们对MHE方案进行简单介绍。
+
+在MHE中，分圆多项式环的次数表示为 $\mathcal{N}$（取值为2的整数次方），决定了MHE的明文和密文空间分别为$R_{Q_{L}}=\mathbb{Z}_{Q_{L}}[X]/(X^{\mathcal{N}}+1)$和$Q_{L}=\prod_{0}^{L}q_i$，其中 $q_i$ 表示特定的素数，$Q_L$ 是初始等级为 $L$ 的密文模数。
+我们在图\ref{f1}中简单介绍了我们使用到的MHE相关函数。在图中，我们使用$\llbracket c\rrbracket_{pk}=(c_0,c_1)\in R^2_{Q_{L}}$ 和 $\overline{p}\in R_{Q_{L}}$ 分别表示MHE公钥加密后的密文和编码之后的明文，其它的符号描述可以参考\ref{tab:symbol}。
+%我们分别使用 $L_c$, $S_c$, $L$, $S$ 表示
+%TODO 这里的MHE概念加一点自己的理解
+%TODO 描述改成脚注
+%SUb
+%POWER -> Mult -> rel
+%InnerSum -> rotL/R + add
+%Add
+%MultByConst 
+% 考虑用圈圈起来的符号，表示密文运算，
+%  加法减法、求和简单来
+在描述图\ref{f1}中，以$‘\textbf{D}’$开头的函数都是分布式的，需要由所有私钥持有方一起完成，而其它的函数在任意一方本地计算即可。其中有两个分布式计算的函数是构建本方案的关键，接下来进行详细的说明：
+\begin{compactitem}
+	\item \textbf{DDecrpted($\cdot$)}：其联合所有私钥持有方解密密文 $\ctx[pk]{c}$。以两方$p_1, p_2$ 分别持有私钥 $sk_1, sk_2$ 为例，为了解密密文 $\ctx[pk]{c}$，$p_1$ 和 $p_2$ 在本地分别利用私钥计算本地部分解密结果 $ h_1 $ 和 $ h_2 $，然后由一方收集所有本地解密结果，聚合得到密文的解密结果。这个分布式解密过程，可以做到对聚合方之外的另一方保密。为了方便描述，我们将这两个子过程分别描述为部分解密 PartDec$(\cdot)$ 和解密结果聚合 AggDec$(\cdot)$。
+	\item  \textbf{DPubKeySwitch($ \cdot $)}：其联合所有私钥持有方在不解密密文的前提下，对密文进行加密公钥的切换。同样以两方$p_1, p_2$ 分别持有私钥 $sk_1, sk_2$ 为例，为了将密文$ \ctx[pk]{c} $切换为由公钥 $ \ctx[pk^{\prime}]{c} $加密，$ p_1,p_2 $在本地利用私钥进行部分的公钥切换运算，然后再交由一方聚合所有的本地运算结果。整个分布式公钥切换的过程，不会泄露原始明文。为了简化描述，我们将两个子步骤描述为本地计算的部分公钥切换PartSwitch($\cdot$) 和切换结果聚合AggSwitch($\cdot$)。
+\end{compactitem}
+具体的子步骤描述如图\ref{f2}所示。
+\begin{figure}
+	\begin{framed}
+		\textbf{Two sub-steps in DDecrypt:}\\
+		\textbf{1.PartDec}($\llbracket c\rrbracket_{pk},sk_i$): Returns a part of the decryption information $h_i$.\\
+		\textbf{2.AggDec}$(\llbracket c\rrbracket_{pk},\{h_i\})$: Returns the plaintext $p\in R_{Q_{L}}$ with scale $S_c$.\\
+		
+		\textbf{Two sub-steps in DPubKeySwitch:}\\
+		\textbf{1.PartSwitch}($\llbracket c\rrbracket_{pk},{sk_i},pk^{\prime}$): Returns a part of the public key switch information $s_i$.\\
+		\textbf{2.AggSwitch}$(\{s_p\})$: Returns the ciphertext $\llbracket c^{\prime}\rrbracket_{pk^{\prime}} \in R^2_{Q_{L}}$ with new public key $pk^{\prime}$.
+	\end{framed}
+	\caption{MHE分布式函数步骤划分}
+	\label{f2}
+\end{figure}
+
+
+
+
+\begin{table}[htbp]
+	\centering
+	\begin{minipage}[t]{0.6\linewidth}
+		\caption{MHE相关函数描述的符号标注}
+		\label{tab:symbol}
+		\begin{tabular*}{\linewidth}{lp{10cm}}
+			\toprule[1.5pt]
+			{\hei 符号} & {\hei 描述}\\
+			\midrule[1pt]
+			$L_c$ & 密文$\llbracket c\rrbracket_{pk}$当前的密文等级 \\ 
+			$S_c$ & 密文$\llbracket c\rrbracket_{pk}$当前的缩放量\footnote{缩放量是指密文解密后的明文和真实表示的明文之间的固定倍数关系} \\
+			$L$ & 密文的初始化等级\\
+			$S$ & 密文的初始化缩放量\\
+			\bottomrule[1.5pt]
+		\end{tabular*}
+	\end{minipage}
+\end{table}
+
+\begin{figure}[!htb]
+	\begin{framed}
+		\noindent \textbf{SecKeyGen($1^\lambda$):} Returns a set of secret keys ${sk_i}$,\\
+		i.e., $sk_i$ for user $U_i$ with the given security parameter $\lambda$.\\
+		\noindent \textbf{DKeyGen(${sk_i}$):} Returns a collective public key $pk$.\\
+		\noindent \textbf{DRelinKeyGen(${sk_i}$):} Returns a collective public key $rlk$.\\
+		\noindent \textbf{DRotKeyGen(${sk_i}$):} Returns a collective public key $rtk$.\\
+		\noindent \textbf{Encode($msg$):} Returns a plaintext $\overline{p}\in R_{Q_{L}}$ with scale $S$, encoding $msg$, a complex vector.\\
+		\noindent \textbf{Decode($\overline{p}$):} With $\overline{p}\in R_{Q_{L}}$ and scale $S_{\overline{p}}$, returns the decoding complex vector of $\overline{p}$.\\
+		\noindent \textbf{DDecrypt($\llbracket c\rrbracket_{pk}, {sk_i}$):} With $\llbracket c\rrbracket_{pk}\in R^2_{Q_{L}}$ and scale $S_c$, returns the plaintext $p\in R_{Q_{L}}$ with scale $S_c$.\\
+		\noindent \textbf{Enc($pk, \overline{p}$):} Returns ciphertext $\llbracket c\rrbracket_{pk}\in R_{Q_{L}}$ \\
+		with scale $S$.\\
+		\noindent \textbf{Add($\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk}$):} Returns $(\llbracket c+c^{\prime}\rrbracket_{pk})$ \\
+		at level min($L_c, L_{c^{\prime}}$) and scale max($S_c, S_{c^{\prime}}$).\\
+		\noindent \textbf{Sub($\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk}$):} Returns $(\llbracket c-c^{\prime}\rrbracket_{pk})$ \\
+		at level min($L_c, L_{c^{\prime}}$) and scale max($S_c, S_{c^{\prime}}$).\\
+		\noindent $\textbf{Mul}_{ct}$$(\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk})$: Returns $\llbracket cc^{\prime}\rrbracket_{pk}$ at level min($L_c, l_{c^{\prime}}$), scale ($S_c\times S_{c^{\prime}}$).\\
+		\noindent \textbf{Power}$(\llbracket c\rrbracket_{pk}, n)$: Returns $\llbracket c^{n}\rrbracket_{pk}$ at level $(S_c-\log{n})$\\
+		\noindent \textbf{RotL/R}($\llbracket c\rrbracket_{pk}, k$): Homomorphically rotates $\llbracket c\rrbracket_{pk}$ to the left/right by $k$ times.\\
+		\noindent \textbf{DPubKeySwitch}$(\llbracket c\rrbracket_{pk}, pk^{\prime},{sk_i})$: Returns $\llbracket c\rrbracket_{pk^{\prime}}$\\without decryption.\\
+		\noindent $\textbf{MulByConst}(\llbracket c\rrbracket_{pk}, const)$: Returns $\llbracket c\times const\rrbracket_{pk}$ with scale depends on $S_c$ and $const$, at level $L_c$.\\
+		% \noindent $\textbf{InnerSum}(\llbracket c\rrbracket_{pk}, batchSize, n)$: Returns $\llbracket c^{\prime}\rrbracket_{pk}$, the sum of $n$ sub-vector with $batchSize$ dimensions in vector hidden in $\llbracket c\rrbracket_{pk}$.
+		\noindent $\textbf{InnerSum}(\llbracket c\rrbracket_{pk})$: Returns $\llbracket c^{\prime}\rrbracket_{pk}$, the inner sum of vector hidden in $\llbracket c\rrbracket_{pk}$.
+		% \textbf{Our expansion, two sub-steps in DDecrypt:}\\
+		% \textbf{1.PartDec}($\llbracket c\rrbracket_{pk},sk_i$): Returns a part of the decryption information $h_i$.\\
+		% \textbf{2.AggDec}$(\llbracket c\rrbracket_{pk},\{h_i\})$: Returns the plaintext $p\in R_{Q_{L}}$ with scale $S_c$.
+	\end{framed}
+	\caption{Frequently used cryptographic operations in MHE}
+	\label{f1}
+\end{figure}
+
+
+\section{问题描述}\label{ps}
+
+\section{拜占庭鲁棒梯度聚合算法}\label{friendly-alg}
+
+\section{隐私保护的拜占庭鲁棒梯度聚合方案}\label{PBFL}
+
+\section{理论分析}\label{ana}
+
+\section{实验评估}\label{eva}
+
+\section{本章小结}\label{con}
