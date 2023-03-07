@@ -113,28 +113,7 @@ $(\rm \romannumeral4)$ 其支持安全的合作公钥切换操作，即在不解
 %MultByConst 
 % 考虑用圈圈起来的符号，表示密文运算，
 %  加法减法、求和简单来
-在描述图\ref{f1}中，以$‘\textbf{D}’$开头的函数都是分布式的，需要由所有私钥持有方一起完成，而其它的函数在任意一方本地计算即可。其中有两个分布式计算的函数是构建本方案的关键，接下来进行详细的说明：
-\begin{compactitem}
-	\item \textbf{DDecrpted($\cdot$)}：其联合所有私钥持有方解密密文 $\ctx[pk]{c}$。以两方$p_1, p_2$ 分别持有私钥 $sk_1, sk_2$ 为例，为了解密密文 $\ctx[pk]{c}$，$p_1$ 和 $p_2$ 在本地分别利用私钥计算本地部分解密结果 $ h_1 $ 和 $ h_2 $，然后由一方收集所有本地解密结果，聚合得到密文的解密结果。这个分布式解密过程，可以做到对聚合方之外的另一方保密。为了方便描述，我们将这两个子过程分别描述为部分解密 PartDec$(\cdot)$ 和解密结果聚合 AggDec$(\cdot)$。
-	\item  \textbf{DPubKeySwitch($ \cdot $)}：其联合所有私钥持有方在不解密密文的前提下，对密文进行加密公钥的切换。同样以两方$p_1, p_2$ 分别持有私钥 $sk_1, sk_2$ 为例，为了将密文$ \ctx[pk]{c} $切换为由公钥 $ \ctx[pk^{\prime}]{c} $加密，$ p_1,p_2 $在本地利用私钥进行部分的公钥切换运算，然后再交由一方聚合所有的本地运算结果。整个分布式公钥切换的过程，不会泄露原始明文。为了简化描述，我们将两个子步骤描述为本地计算的部分公钥切换PartSwitch($\cdot$) 和切换结果聚合AggSwitch($\cdot$)。
-\end{compactitem}
-具体的子步骤描述如图\ref{f2}所示。
-\begin{figure}
-	\begin{framed}
-		\textbf{Two sub-steps in DDecrypt:}\\
-		\textbf{1.PartDec}($\llbracket c\rrbracket_{pk},sk_i$): Returns a part of the decryption information $h_i$.\\
-		\textbf{2.AggDec}$(\llbracket c\rrbracket_{pk},\{h_i\})$: Returns the plaintext $p\in R_{Q_{L}}$ with scale $S_c$.\\
-		
-		\textbf{Two sub-steps in DPubKeySwitch:}\\
-		\textbf{1.PartSwitch}($\llbracket c\rrbracket_{pk},{sk_i},pk^{\prime}$): Returns a part of the public key switch information $s_i$.\\
-		\textbf{2.AggSwitch}$(\{s_p\})$: Returns the ciphertext $\llbracket c^{\prime}\rrbracket_{pk^{\prime}} \in R^2_{Q_{L}}$ with new public key $pk^{\prime}$.
-	\end{framed}
-	\caption{MHE分布式函数步骤划分}
-	\label{f2}
-\end{figure}
-
-
-
+在描述图\ref{f1}中，以$‘\textbf{D}’$开头的函数都是分布式的，需要由所有私钥持有方一起完成，而其它的函数在任意一方本地计算即可。
 
 \begin{table}[htbp]
 	\centering
@@ -157,7 +136,7 @@ $(\rm \romannumeral4)$ 其支持安全的合作公钥切换操作，即在不解
 \begin{figure}[!htb]
 	\begin{framed}
 		\noindent \textbf{SecKeyGen($1^\lambda$):} Returns a set of secret keys ${sk_i}$,\\
-		i.e., $sk_i$ for user $U_i$ with the given security parameter $\lambda$.\\
+		i.e., $sk_i$ for user $P_i$ with the given security parameter $\lambda$.\\
 		\noindent \textbf{DKeyGen(${sk_i}$):} Returns a collective public key $pk$.\\
 		\noindent \textbf{DRelinKeyGen(${sk_i}$):} Returns a collective public key $rlk$.\\
 		\noindent \textbf{DRotKeyGen(${sk_i}$):} Returns a collective public key $rtk$.\\
@@ -188,11 +167,296 @@ $(\rm \romannumeral4)$ 其支持安全的合作公钥切换操作，即在不解
 
 \section{问题描述}\label{ps}
 
-\section{拜占庭鲁棒梯度聚合算法}\label{friendly-alg}
+\subsection{系统模型}
+我们的系统模型图如图\ref{syspnd}，其中主要有四个实体，具体描述如下：
+\begin{compactitem}
+	\item \textit{聚合服务器（Aggregation Server，AS）：}AS为所有的FL参与方提供协同训练的聚合服务。在每个FL轮次中，AS收集用户上传的加密模型参数，然后聚合生成全局模型参数后分发给用户。
+	\item \textit{密码服务提供商（Crypto Service Provider，CSP）：}CSP负责辅助AS完成对用户上传的加密模型参数的聚合，即CSP持有一份私钥，在不侵犯用户参数隐私的前提下，利用私钥计算AS需要的中间信息。
+	\item \textit{数据拥有者（Data Owners，Parties in FL）：}FL中需要联合训练的参与方，在本地持有隐私数据。本方案假定数据持有者可能被敌对方挟持，做出恶意行为扰乱FL系统。
+	\item \textit{密钥生成助手（Key Generation Assistant，KGA）：}KGA协助所有参与方和AS生成用户侧的公私钥对，且保证参与方收到的私钥是同一份。为了避免KGA的独立解密行为，我们让其和AS分别持有一份私钥，并且假设KGA是半诚实（semi-honest）实体且不和AS发生共谋行为，KGA在完成密钥生成之后，将持有的私钥安全的分发给所有参与方。
+\end{compactitem}
+
+\begin{figure}[htbp]
+	\begin{center}
+		\includegraphics[scale=0.077]{img/sys-v3.drawio.png}
+		\caption{系统模型图}
+		\label{syspnd}
+	\end{center}
+\end{figure}
+
+\subsection{威胁模型}
+本方案致力于同时解决由半诚实聚合服务器造成的隐私威胁和由拜占庭用户造成的安全威胁。我们假设FL中的参与方的本地数据是独立同分布的（independent identically distributed，IID）。
+拜占庭用户可以向AS发送任意的模型参数，从而影响全局模型的训练。
+同时本方案与类似工作\cite{so2020byzantine, yin2018byzantine, liu2021privacy}持有同样的假设，我们假定拜占庭用户的上限不超过所有用户的一半，即$|M|\leq\frac{|T|-1}{2}$，其中$|M|$ 和 $|T|$ 分别表示恶意用户的数量和所有用户的数量，这个假设是本方案收敛性证明的前提。
+除此之外，我们假设AS、CSP和KGA是半诚实实体，这意味着它们将严格执行本方案设计的安全协议，并且尝试从中推断出用户的隐私信息。
+最后，我们假设方案中涉及到的四个实体AS、CSP、KGA和Users，都不会和其它任意一方发生共谋行为。
+
+\subsection{设计目标}
+基于以上提到的系统模型和威胁模型，本方案需要达到的目标如下：
+\begin{compactitem}
+	\item \textbf{保护模型参数隐私：}实现对用户上传的本地参数和聚合后的全局参数的隐私保护，保证模型参数对AS和CSP而言，可用而不可见。
+	\item \textbf{实现拜占庭容错：}对于可能出现的最多半数的拜占庭用户，本方案将实现在密文上的拜占庭用户过滤，保证全局模型的准确率。
+	\item \textbf{提升全局模型准确率：}对比现有的其它方案，实现在相同恶意环境下的全局模型准确率的提升。
+\end{compactitem}
+
+\section{拜占庭鲁棒参数聚合算法}\label{friendly-alg}
+本节我们详细描述设计的密文计算友好的拜占庭容错梯度聚合协议。本方案涉及到的符号在表\ref{sym}中就行了具体的描述。
+
+为了涉及密文计算友好的拜占庭容错参数聚合算法，我们提出了高效的距离计算基准选择以及有效的聚合权重赋予策略，详细描述如下：
+\begin{compactitem}
+	\item \textbf{高效的距离计算基准选择：}我们对用户本地参数进行评估时，需要一个基准来判断用户参数的质量，即我们使用计算参与方参数到基准参数的距离，决定参数的聚合权重（将权重赋予良性梯度）。我们观察到，参与方的本地模型参数和上一轮的全局参数的距离，反映了用户本轮次更新的幅度大小，因此我们选择使用\textbf{上一轮的全局模型}，作为距离计算的基准。这很好的提升了本方案的密文友好性和计算复杂度，对比PEFL\cite{liu2021privacy}我们不需要进行复杂的参数基准计算（增加密文计算开销），即将基准的计算从复杂度$ O(N) $降低到了常数复杂度$ O(1) $，其中$N$表示参与方的数量。
+	\item \textbf{基于中值的权重赋予策略：}针对我们选择的计算基准（上一轮的全局模型），拜占庭用户可以从两方面进行攻击，$(\rm \romannumeral1)$进行幅度很小的更新或不更新，以此扰乱全局模型的收敛；$(\rm \romannumeral2)$进行幅度很大的更新，破坏全局模型更新的方向。因此，我们将到基准的距离较小和较大的用户更新视为恶意更新，然后赋予较小甚至可忽略的聚合权重。而距离值位于中间的参与方，我们将其视为良性参与方，赋予较高的聚合权重，我们对算法的细节在算法\ref{a0}中进行了详细的描述。
+\end{compactitem}
+\begin{table}
+	\centering
+	\caption{符号表}
+	\label{sym}
+	\scalebox{0.95}{
+		\renewcommand{\arraystretch}{1.2}
+		\begin{tabular}{cl}
+			\hline
+			\hline
+			\textbf{符号}               & \textbf{描述}                      \\ 
+			\hline
+			$\lambda$                      & 安全参数                        \\ 
+			$pk_x$                         & 实体$x$的公钥                              \\ 
+			$sk_x^y$                       & \makecell[l]{实体$y$持有的对应于公钥$ pk_x $的私钥} \\ 
+			$D$                            & 用户本地数据                             \\ 
+			$x$                            & 数据样本特征                   \\ 
+			$y$                            & 数据样本标签                              \\ 
+			$W_g$                            & 全局模型参数                            \\ 
+			$W_i$                            & 用户$P_i$本地模型参数                             \\ 
+			$G$                            & 模型梯度                           \\ 
+			$\eta$                         & 模型训练学习率                          \\ 
+			$N$                            & FL中参与方数量                 \\ 
+			$\llbracket W \rrbracket_{pk}$ & 使用公钥$pk$加密的密文 \\ 
+			$d$                            & 欧式距离           \\ 
+			$f_s(P_x, t)$                  & \makecell[l]{在轮次t，表示计算出参与方$ P_x $聚合权重的抽象函数} \\
+			$\gamma_i$                       & 参与方$P_i$的聚合权重       \\
+			\hline
+			\hline
+		\end{tabular}
+	}
+\end{table}
+
+\begin{algorithm}[htbp]
+	\caption{密文计算友好的拜占庭鲁棒FL聚合协议}
+	\label{a0}
+	\begin{algorithmic}[1]
+		\REQUIRE 在轮次$t$，参与方本地模型参数 $\{W_1^t, W_2^t, ..., W_N^t\}$，其中$N$表示参与方数量，$W_g^{t-1}$ 表示上一轮的全局模型参数。
+		\ENSURE 轮次$t$ 的全局模型参数 $W_g^t$。 
+		\FOR{$i \in [1...N]$ 计算用户参数到基准的欧式距离平方}
+		\STATE ${d}_i = \Vert W_i^t - W_g^{t-1} \Vert ^2$
+		\ENDFOR
+		\STATE 获取距离向量 ${d}$的中值：\\${d}_{mid} = median(\{{d}_{1}, {d}_{2},..., {d}_{n}\})$
+		\FOR{$i\in[1...N]$ 计算到 $d_{mid}$ 的距离}
+		\STATE $d^{\prime}_{i}=\left|d_i-d_{mid}\right|$
+		% \STATE $d^{\prime}_{sum}=d^{\prime}_{sum}+d^{\prime}_{i}$
+		\ENDFOR
+		% \STATE Obtains the sum of the individual values in vector $d$ as $d_{sum}$
+		\FOR{$i\in[1...N]$} %calculates the relative distance to $d_{mid}$}
+	\STATE $scores_i=\dfrac{\sum_{j=1}^{N} (d^{\prime}_{j} + 1)}{d^{\prime}_i + 1}$ \COMMENT{距离$ d_{mid} $越近，聚合权重越高}
+	\ENDFOR
+	\FOR{$i\in [1...N]$ 缩放 $scores_i$ 到 0-1}
+	\STATE $\gamma_i=\dfrac{scores_i}{\sum_{j=1}^{N} scores_j}$
+	\ENDFOR
+	\STATE 使用缩放后的权重线性聚合参数:\\
+	$W_g^{t} =\sum_{i=1}^{N}\gamma_i * W_i^{t}$
+\end{algorithmic}
+\end{algorithm}
 
 \section{隐私保护的拜占庭鲁棒梯度聚合方案}\label{PBFL}
+本节详细描述了本方案如何赋予我们设计的拜占庭鲁棒聚合算法完全的模型参数隐私保护能力。
+粗略的说，首先用户将使用HE加密后的本地模型更新，上传到AS，然后AS在CSP的协助下，
+在密文上确定每份本地更新的聚合权重，聚合完成后再完成全局参数的安全分发。主要有如下四个阶段：系统初始化、本地训练、参数的隐私安全聚合以及参数的安全分发。
+
+\subsection{系统初始化}
+本阶段需要完成两对非对称密钥的生成与分发，首先AS和CSP协同生成服务端侧密钥（下标以$ s $注明），其协同调用四个MHE安全协议SecKeyGen($\cdot$), DKeyGen($\cdot$), DRelinKeyGen($\cdot$), 和 DRotKeyGen($\cdot$)，协同生成一份密钥集合$$ (pk_s, rlk_s, rtk_s, sk_{s}^{AS}, sk_{s}^{CSP}),$$其中私钥$ sk_{s}^{AS} $由AS持有，私钥$ sk_{s}^{CSP} $由CSP持有，其余密钥公开，$ pk_s $用于明文的加密，$ rlk_s $用于密文乘法后的重线性化，$ rtk_s $y用于计算内部元素和时的元素移动。
+
+然后KGA和AS之间协同生成用户侧密钥（下标以$ u $注明），通过执行SecKeyGen($\cdot$) 和 DKeyGen($\cdot$)协议，生成$(pk_u, sk_{u}^{AS}, sk_{u}^{U})$，其中私钥$ sk_{u}^{AS} $由AS持有，$ sk_{u}^{U} $ 由KGA持有，然后安全分配给所有用户（所有用户持有相同私钥）。在这个过程中，KGA充当一个中介，使得所有用户和AS协商得到一份公私钥集合，为了保证KGA不直接持有用户侧私钥，对用户隐私造成威胁，我们选择使AS和KGA同时持有私钥，同时假设AS和KGA之间没有共谋行为。
+
+服务器侧公钥用于加密用户上传的本地参数，将私钥分布于AS和CSP之间为了保证AS不能直接解密用户上传的加密参数；而用户侧的公钥用于加密聚合后的参数，将私钥分布与AS和所有用户之间，为了保证AS或者CSP不能直接解密聚合后的参数。以此我们实现了对本地参数以及聚合后全局参数的隐私保护，具体的私钥分配示意图如图\ref{keypng}所示。
+
+\begin{figure}[htbp]
+	\begin{center}
+		\includegraphics[scale=0.077]{img/key-v1.drawio.png}
+		\caption{私钥分布示意图}
+		\label{keypng}
+	\end{center}
+\end{figure}
+
+从密钥分配方案可知，本方案的私钥皆由两方持有，于是我们对MHE进行了两方安全计算协议的设计，其中包括安全的两方协同解密算法（Secure 2-party cooperative decryption，\textbf{Sec2Dec}）和安全的两方协同公钥切换算法（Secure 2-party cooperative public key switch，\textbf{Sec2KeyS}）。
+\textbf{Sec2Dec}和\textbf{Sec2KeyS}以如下两个MHE分布式函数为基础：
+\begin{compactitem}
+	\item \textbf{DDecrpted($\cdot$)}：其联合所有私钥持有方解密密文 $\ctx[pk]{c}$。以两方$P_1, P_2$ 分别持有私钥 $sk_1, sk_2$ 为例，为了解密密文 $\ctx[pk]{c}$，$P_1$ 和 $P_2$ 在本地分别利用私钥计算本地部分解密结果 $ h_1 $ 和 $ h_2 $，然后由一方收集所有本地解密结果，聚合得到密文的解密结果。这个分布式解密过程，可以做到对聚合方之外的另一方保密。为了方便描述，我们将这两个子过程分别描述为部分解密 PartDec$(\cdot)$ 和解密结果聚合 AggDec$(\cdot)$。
+	\item  \textbf{DPubKeySwitch($ \cdot $)}：其联合所有私钥持有方在不解密密文的前提下，对密文进行加密公钥的切换。同样以两方$P_1, P_2$ 分别持有私钥 $sk_1, sk_2$ 为例，为了将密文$ \ctx[pk]{c} $切换为由公钥 $ \ctx[pk^{\prime}]{c} $加密，$ P_1,P_2 $在本地利用私钥进行部分的公钥切换运算，然后再交由一方聚合所有的本地运算结果。整个分布式公钥切换的过程，不会泄露原始明文。为了简化描述，我们将两个子步骤描述为本地计算的部分公钥切换PartSwitch($\cdot$) 和切换结果聚合AggSwitch($\cdot$)。
+\end{compactitem}
+具体的子步骤描述如图\ref{f2}所示。
+\begin{figure}
+	\begin{framed}
+		\textbf{DDecrypt($\cdot$)}子步骤：\\
+		\indent\textbf{1.PartDec}($\llbracket c\rrbracket_{pk},sk_i$): 返回本地部分解密信息 $h_i$。\\
+		\indent\textbf{2.AggDec}$(\llbracket c\rrbracket_{pk},\{h_i\})$: 返回明文 $c\in R_{Q_{L}}$。\\
+		
+		\textbf{DPubKeySwitch($ \cdot $)}子步骤：\\
+		\indent\textbf{1.PartSwitch}($\llbracket c\rrbracket_{pk},{sk_i},pk^{\prime}$): 返回本地部分公钥切换信息 $s_i$.\\
+		\indent\textbf{2.AggSwitch}$(\{s_p\})$: 返回以新公钥$ pk^{\prime} $加密的密文 $\llbracket c^{\prime}\rrbracket_{pk^{\prime}} \in R^2_{Q_{L}}$。
+	\end{framed}
+	\caption{MHE分布式函数步骤划分}
+	\label{f2}
+\end{figure}
+
+\textbf{Sec2Dec}是MHE中的分布式协同解密算法\textbf{DDecrypt($\cdot$)}在两方场景下的定制化。具体来说，我们两方持有密文，需要另一方协同解密但又不向另一方泄露明文的场景，进行了设计。
+假设私钥持有方$p_1,p_2$\footnote{$p_1,p_2$可以是方案实体中的任意两方，比如AS和CSP}分别持有私钥$sk^1, sk^2$，其对应公钥为$ pk $，$ p_1 $和$p_2$持有密文$\ctx[pk]{c}$，需要在对$p_2$保密的前提下，解密$\ctx[pk]{c}$，算法的细节描述如算法\ref{a-1}所示。
+\begin{algorithm}[htbp]
+	\caption{安全两方协同解密算法\\ \textbf{Sec2Dec}($\{sk^1, sk^2\}, \llbracket c\rrbracket_{pk}$) $\rightarrow c$}
+	\label{a-1}
+	\begin{algorithmic}[1]
+		\REQUIRE 对于MHE密钥集合$(\{sk^1, sk^2\}, pk)$，参与方 $p_1$ 和 $p_2$ 分别持有 $sk^1$ 和 $sk^2$；$p_1, p_2$ 持有密文 $\llbracket c\rrbracket_{pk}$.
+		\ENSURE 参与方 $p_1$ 获取明文 $c$, 且 $c$ 对$ p_2 $保密。
+%		\IF{参与方 $p_2$ 不持有 $\llbracket c\rrbracket_{pk}$}
+%		\STATE $p_1$ 发送 $\llbracket c\rrbracket_{pk}$ 给 $p_2$.
+%		\ENDIF
+		\FOR{$x \in \{1, 2\}$}
+		\STATE 参与方 $p_x$ 计算部分解密信息如下：\\ $\llbracket c_x\rrbracket_{pk} \leftarrow \textbf{PartDec}(\llbracket c\rrbracket_{pk}, sk^x)$. 
+		\ENDFOR
+		\STATE 参与方 $p_2$ 发送 $\llbracket c_2\rrbracket_{pk}$ 到 $p_1$。
+		\STATE 参与方 $p_1$ 聚合部分解密信息如下：\\ $c \leftarrow \textbf{AggDec}(\llbracket c\rrbracket_{pk}, \{\llbracket c_1\rrbracket_{pk}, \llbracket c_2\rrbracket_{pk}\})$
+		\RETURN $p_1$ 获取明文 $ c $.
+	\end{algorithmic}
+\end{algorithm}
+
+\textbf{Sec2KeyS}是MHE中分布式公钥切换算法\textbf{DPubKeySwitch($ \cdot $)}在两方场景的定制化，具体来说，两个私钥持有方都持有密文，且两方都不解密密文的前提下，完成对密文公钥的切换。
+假设两个参与方$p_1, p_2$分别持有私钥$sk^1, sk^2$，其对应公钥为$ pk $，
+同时$p_1, p_2$持有密文$ \ctx[pk_1]{c} $，想要将密文切换为由$ pk_2 $加密，即在对两方保密的前提下，获取密文$ \ctx[pk_2]{c} $，算法的细节描述如算法\ref{a-2}所示。
+
+\begin{algorithm}[htbp]
+	\caption{安全两方协同公钥切换算法\\ \textbf{Sec2KeyS}($\{sk^1, sk^2\}, pk_1, pk_2, \llbracket c\rrbracket_{pk_1})$ $\rightarrow \llbracket c\rrbracket_{pk_2}$}
+	\label{a-2}
+	\begin{algorithmic}[1]
+		\REQUIRE 对于MHE密钥集合 $(\{sk^1, sk^2\}, pk_1)$, 参与方 $p_1$ 和 $p_2$ 分别持有 $sk^1$ 和 $sk^2$；$p_1, p_2$ 同时持有密文 $\llbracket c\rrbracket_{pk_1}$；$pk_2$ 是密文 $\llbracket c\rrbracket_{pk_1}$ 想要切换到的公钥。
+		\ENSURE 参与方 $p_1$ 获得密文使用公钥$pk_2$加密的密文$\llbracket c\rrbracket_{pk_2}$ ，且明文 $c$ 对 $p_1$ 和 $p_2$ 完全保密。
+%		\IF{party $p_2$ does not hold $\llbracket c\rrbracket_{pk}$}
+%		\STATE Party $p_1$ sends $\llbracket c\rrbracket_{pk_1}$ to party $p_2$.
+%		\ENDIF
+		\FOR{$x \in \{1, 2\}$}
+		\STATE  参与方$p_x$ 计算本地部分公钥切换信息:\\ $\llbracket c_x\rrbracket_{pk_2} \leftarrow \textbf{PartSwitch}(\llbracket c\rrbracket_{pk_1}, sk^x, pk_2)$
+		\ENDFOR
+		\STATE 参与方 $p_2$ 发送 $\llbracket c_2\rrbracket_{pk_2}$ 到 $p_1$。
+		\STATE 参与方 $p_1$ 聚合公钥切换信息如下：\\ $\llbracket c\rrbracket_{pk_2} \leftarrow \textbf{AggSwitch}(\{\llbracket c_1\rrbracket_{pk_2}, \llbracket c_2\rrbracket_{pk_2} \})$
+		\RETURN $ p_1 $ 获得密文 $\llbracket c\rrbracket_{pk_2}$， 且 $c$ 对 $ p_1, p_2 $完全保密。
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{本地训练}
+本阶段我们不需要提前知晓拜占庭用户的真实占比，只假定其占比上限不超过$50\%$，这比一些需要以拜占庭节点比例作为先验知识的鲁棒聚合方案，即Krum\cite{blanchard2017machine}和Bulyan\cite{guerraoui2018hidden}更加切合实际场景。
+
+在训练的初始化阶段，AS将使用用户侧公钥$ pk_u $加密的本轮全局模型参数
+$ \ctx[pk_u]{W_g} $发送给所有参与本轮训练的用户。如上文所属，用户侧私钥$\{sk_u^{U}, sk_u^{AS}\}$由参与方$P_i$和$AS$分别持有，然后我们让这两个私钥持有方协同调用安全两方协同解密算法\ref{a-1}
+\begin{equation}
+	W_g \leftarrow \textbf{Sec2Dec}(\{sk_u^U, sk_u^{AS}\}, \llbracket W_g\rrbracket_{pk_u})
+\end{equation}
+让$ P_i $获取到全局模型明文$ W_g $的同时，对AS保密。
+紧接着参与方将全局模型参数$ W_g $应用到本地模型，然后使用本地数据集
+$ D_i $进行训练，获取更新后的本地参数。具体来讲，参与方$P_i$ 将数据样本特征$x$输入到本地模型，获取到输出之后与标签$ y $执行交叉熵损失函数，然后再利用反向传播算法得到本次更新的梯度。
+最后我们选择使用动量优化的随机梯度下降算法（SGD with momentum）来根据梯度得到最后更新之后的模型参数。这个方法同时考虑到了本次更新梯度和历史更新梯度，让参数的更新更加平滑。
+在加速收敛的同时，减小了梯度的变化量，也让良性梯度之间相似度更高，更便于我们过滤恶意节点，不同类型的节点本地训练的步骤如算法\ref{a1}所示。
+
+\begin{algorithm}[htbp]
+	\caption{获取节点本地更新参数}
+	\label{a1}
+	\begin{algorithmic}[1]
+		\REQUIRE 参与方 $P_i$的数据集 $D_i$，全局模型参数 $W_g$。
+		\ENSURE $P_i$本地更新后的模型参数 $W_i$。
+		\IF{$P_i$ 是 \textbf{GA拜占庭节点}}
+		\STATE $W_i \leftarrow$ 正态分布随机向量采样
+		\RETURN $P_i$ 的 $W_i$。
+		\ELSE
+		\STATE $\mathcal{B}\leftarrow$ 划分$D_i$为容量为$ B $的小批量数据
+		\FOR {本地训练轮次 $i$ 从 $1$ 到 $E$}
+		\FOR {批量数据 $b \in \mathcal{B}$}
+		\IF{$P_i$ 是 \textbf{LFA拜占庭节点}}
+		\STATE $label(b) \leftarrow 9-lable(b)$
+		\ENDIF
+		\STATE $G_{b}\leftarrow$ 计算$b$的梯度
+		\STATE $W_i\leftarrow W_i - \eta G_{b}$
+		\ENDFOR
+		\ENDFOR
+		\RETURN $P_i$的$W_i$。
+		% \STATE $\llbracket W_i \rrbracket_{pk_u}\leftarrow$ Encrypt($W_i$, $pk_s$)
+		\ENDIF
+	\end{algorithmic}
+\end{algorithm}
+
+为了保护用户上传的参数隐私，用户$P_i$在获取到更新后的参数后，使用服务端侧公钥$ pk_s $对$ W_i $进行加密，得到 $ \ctx[pk_s]{W_i} $，然后发送给AS。通过使用MHE中的单指令多数据操作（Single Instruction Multiple Data，SIMD），我们可以将拥有许多维度的参数向量$W_i$打包进一个或者几个MHE密文，这极大的加速了后续安全聚合的进程。
+
+\subsection{本地参数的安全聚合}
+在本阶段，AS将在CSP的协助下，完成对用户上传的加密参数的隐私安全聚合。其中CSP的协助步骤主要发生在两个阶段，第一个是部分信息的协助解密，第二个是聚合后密文从服务侧公钥$ pk_s $向用户侧公钥$pk_u$的安全切换。
+
+对加密参数的安全聚合，首先要计算参数到基准的欧式距离平方，本方案选择的基准是上一轮的全局模型，所以对于聚合轮次$ t $来说，需要在密文上计算表达式$\left\| \llbracket W_i^{t} \rrbracket_{pk_s} - \llbracket W_g^{t-1} \rrbracket_{pk_s} \right\|_2^2$的值，其中$ \llbracket W_i^{t} \rrbracket_{pk_s} $表示密文用户参数，$ \llbracket W_g^{t-1} \rrbracket_{pk_s} $表示密文上一轮全局参数。
+具体步骤如下：AS首先在密文上计算$\textbf{Sub}(\cdot)$和$ \textbf{Power}(\cdot) $函数，得到用户参数到基准的差值平方，最后执行$ \textbf{InnerSum}(\cdot) $函数求和所有内部元素的和，得到的密文即包含了我们所需要的欧式距离平方信息，为了解密这个信息，AS和CSP协同调用安全两方协同解密算法\ref{a-1}，在保证距离信息对CSP完全保密的前提下，让AS获取明文的距离信息，算法的细节描述如算法\ref{a2}所示。
+
+\begin{algorithm}[htbp]
+	\caption{安全欧式距离平方计算\\ \textbf{SecDis}$(\llbracket W_i^{t}\rrbracket, \llbracket W_g^{t-1}\rrbracket)\rightarrow d_i$}
+	\label{a2}
+	\begin{algorithmic}
+		\REQUIRE 在轮次$t$, AS 持有第 $t-1$ 轮 全局模型参数$\llbracket W_g^{t-1} \rrbracket_{pk_s}$以及参与方$P_i$的本地模型参数 $\llbracket W_i^{t} \rrbracket_{pk_s}$；AS 和 CSP 分别持有 $sk_{s}^{AS}$ 和 $sk_{s}^{CSP}$，对应着服务侧公钥$pk_s$。
+		\ENSURE $\llbracket W_i^{t}\rrbracket$ 和 $\llbracket W_g^{t-1}\rrbracket$之间的欧式距离平方。
+	\end{algorithmic}
+%	\textbf{Performed by AS and CSP}\\
+	\textbf{AS:}
+	\begin{algorithmic}[1]
+		\STATE 计算差值：\\$\llbracket tmp\rrbracket_{pk_s}\leftarrow {\textbf{Sub}}(\llbracket W_i^{t} \rrbracket_{pk_s}, \llbracket W_g^{t-1} \rrbracket_{pk_s})$
+		\STATE 计算平方：\\$\llbracket tmp \rrbracket_{pk_s}\leftarrow {\textbf{Power}}(\llbracket tmp\rrbracket_{pk_s}, 2)$
+		\STATE 计算内部元素：\\$\llbracket d_i \rrbracket_{pk_s}\leftarrow {\textbf{InnerSum}}(\llbracket tmp \rrbracket_{pk_s})$
+		% \STATE Sends $\llbracket W_{isum} \rrbracket_{pk_s}$ to AS.
+	\end{algorithmic}
+	\textbf{AS \& CSP:}
+	\begin{algorithmic}[1]
+		\STATE AS 和 CSP 协同解密: \\ $d_i \leftarrow \textbf{Sec2Dec}(\{sk_{s}^{AS}, sk_{s}^{CSP}\}, \llbracket d_i \rrbracket_{pk_s})$
+		% \STATE Calculates the partial decryption information: \\$hd_{CSP}^{(t+1)}\leftarrow {\rm PartDec}(\llbracket W_{isum} \rrbracket_{pk_s}, sk_{s}^{CSP})$
+		% \STATE Sends $hd_{CSP}^{(t+1)}$ to AS.
+		\RETURN AS得到欧式距离平方$d_i$。
+	\end{algorithmic}
+\end{algorithm}
+
+在获取到用户参数到基准的距离之后，接下来聚合权重的计算和算法\ref{a0}（第4-13行）一致，接下来描述具体计算步骤。
+
+首先AS从所有参与方到基准的距离向量$\{d_1, d_2,...,d_N\}$中排序后获取中值，结果以$d_{mid}$表示。然后计算所有距离值到$ d_{mid} $的相对距离：
+\begin{equation}\label{dToMid}
+	d^{\prime}_{i}=\left|d_i-d_{mid}\right|
+\end{equation}
+得到距离向量$\{d^{\prime}_1, d^{\prime}_2,...,d^{\prime}_N\}$，然后再根据这个向量中的值给每个参与聚合的密文参数打分，距离中值越近的得分越高，反之得分越低，计算方式如下：
+\begin{equation}\label{sc}
+	scores_i=\frac{\sum_{j=1}^{N} (d^{\prime}_{j} + 1)}{d^{\prime}_i + 1}
+\end{equation}
+在等式\ref{sc}中，我们以距离值$d^{\prime}_i + 1$作为分母\footnote{加一避免分母为0}，然后以向量和为分子，这意味着向量中值越小的，计算出来的得分越高，也就是距离$d_{mid}$越近的用户，得分越高，同时也将距离中值偏差大的用户，赋予了更低的分数。最后将得分等比例缩放为聚合权重，计算方式如下：
+\begin{equation}
+	\gamma_i=\dfrac{scores_i}{\sum_{j=1}^{N} scores_j}
+\end{equation}
+最后使用得到的聚合权重$\gamma$对密文用户参数进行线性聚合：
+\begin{equation}\label{e3}
+	\llbracket W_g\rrbracket_{pk_s}=\sum_{i=1}^{N}\gamma_i*\llbracket W_i\rrbracket_{pk_s}
+\end{equation}
+其中$*$表示常数和密文的乘法，$\sum$表示多个密文的加法运算。
+
+\subsection{聚合参数的安全分发}
+本阶段完成对聚合后全局参数的分发，在上述步骤执行完成之后，AS得到了聚合后的全局模型参数$ \llbracket W_g\rrbracket_{pk_s} $，其结果是用服务侧公钥$pk_s$加密，无法被用户直接解密使用，所以需要在对AS以及CSP保密的前提下，将加密公钥切换至用户侧公钥$pk_u$。
+AS和CSP对聚合后的全局梯度密文执行安全两方公钥切换协议，可以达到以上目的。
+具体来说，AS和CSP分别持有服务侧私钥$\{sk_s^{AS}, sk_s^{CSP}\}$，协同调用如下过程：
+%\begin{small}
+	\begin{equation}\label{e4}
+		\begin{aligned}
+			\llbracket W_g\rrbracket_{pk_u} \leftarrow \textbf{Sec2KeyS}(\{sk_s^{AS}, sk_s^{CSP}\}, pk_u, pk_s, \llbracket W_g\rrbracket_{pk_s})
+		\end{aligned}
+	\end{equation}
+%\end{small}
+最后AS将得到由用户侧密钥加密的全局参数密文$\llbracket W_g\rrbracket_{pk_u}$，将其广播给所有参与方。
+
+\textbf{讨论：}本方案中对用户参数和基准之间的欧式距离平方值进行了解密操作，我们认为这个操作不会侵犯到用户的数据隐私。首先很明显AS获取的一维距离信息，无法推导处任何一个参数的具体信息，包括参数的大小、方向以及单个元素的正负。文献\cite{geiping2020inverting}提出的针对梯度的数据重构方案，可以根据梯度之间的余弦相似度，重构用户的训练样本，但是这个方案需要知道梯度的正负，而在我们的方案中，AS是无法获取这个信息的，所以不会泄露用户的数据隐私。
 
 \section{理论分析}\label{ana}
+
 
 \section{实验评估}\label{eva}
 

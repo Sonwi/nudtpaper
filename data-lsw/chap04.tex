@@ -178,7 +178,7 @@ FL+HC \cite{briggs2020federated} 致力于解决FL中面临的异质数据挑战
 SMD具体的算法细节描述如算法\ref{alg2}所示。
 
 \textbf{讨论：}在我们的安全欧式距离以及安全的曼哈顿距离计算中，都将最后的结果（$\langle \textit{EDis}\rangle$和$\langle \textit{MDis}\rangle$）从共享份重构为明文（$\textit{EDis}$和$\textit{MDis}$），我们认为这个距离信息的重构不会侵犯用户的数据隐私。
-很明显即使SP能够得到任意两个梯度之间的距离信息，也无法推断出任何一个梯度的具体信息，包括梯度的大小、方向以及单个元素的正负。文献\cite{geiping2020inverting}提出的针对梯度的数据重构方案，可以根据梯度之间的余弦相似度，重构用户的训练样本，但是这个方案需要知道梯度的正负，而在我们的方案中，SP是无法获取这个信息的，所以是无法泄露用户的数据隐私的。
+很明显即使SP能够得到任意两个梯度之间的距离信息，也无法推断出任何一个梯度的具体信息，包括梯度的大小、方向以及单个元素的正负。文献\cite{geiping2020inverting}提出的针对梯度的数据重构方案，可以根据梯度之间的余弦相似度，重构用户的训练样本，但是这个方案需要知道梯度的正负，而在我们的方案中，SP是无法获取这个信息的，所以不会泄露用户的数据隐私。
 
 \begin{algorithm}[htbp]
     \caption{安全曼哈顿距离计算\\$\text{SMD}(\boldsymbol{\langle g_i\rangle}, \boldsymbol{\langle g_j\rangle}) \xrightarrow{} \textit{MDis}$}
