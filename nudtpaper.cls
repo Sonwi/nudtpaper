@@ -550,6 +550,7 @@ gbnamefmt=lowercase,gbpub=false]{biblatex}%
 \newtheorem{example}{例}[chapter]
 \newtheorem{problem}{问题}[section]
 \newtheorem{remark}{注释}[section]
+\newtheorem{hybrid}{混合论证}
 \def\classification#1{\def\@classification{#1}} % 中图分类号
 \def\serialno#1{\def\@serialno{#1}} % 学号
 \def\UDC#1{\def\@UDC{#1}} % UDC号

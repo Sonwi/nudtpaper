@@ -135,32 +135,31 @@ $(\rm \romannumeral4)$ 其支持安全的合作公钥切换操作，即在不解
 
 \begin{figure}[!htb]
 	\begin{framed}
-		\noindent \textbf{SecKeyGen($1^\lambda$):} Returns a set of secret keys ${sk_i}$,\\
-		i.e., $sk_i$ for user $P_i$ with the given security parameter $\lambda$.\\
-		\noindent \textbf{DKeyGen(${sk_i}$):} Returns a collective public key $pk$.\\
-		\noindent \textbf{DRelinKeyGen(${sk_i}$):} Returns a collective public key $rlk$.\\
-		\noindent \textbf{DRotKeyGen(${sk_i}$):} Returns a collective public key $rtk$.\\
-		\noindent \textbf{Encode($msg$):} Returns a plaintext $\overline{p}\in R_{Q_{L}}$ with scale $S$, encoding $msg$, a complex vector.\\
-		\noindent \textbf{Decode($\overline{p}$):} With $\overline{p}\in R_{Q_{L}}$ and scale $S_{\overline{p}}$, returns the decoding complex vector of $\overline{p}$.\\
-		\noindent \textbf{DDecrypt($\llbracket c\rrbracket_{pk}, {sk_i}$):} With $\llbracket c\rrbracket_{pk}\in R^2_{Q_{L}}$ and scale $S_c$, returns the plaintext $p\in R_{Q_{L}}$ with scale $S_c$.\\
-		\noindent \textbf{Enc($pk, \overline{p}$):} Returns ciphertext $\llbracket c\rrbracket_{pk}\in R_{Q_{L}}$ \\
-		with scale $S$.\\
-		\noindent \textbf{Add($\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk}$):} Returns $(\llbracket c+c^{\prime}\rrbracket_{pk})$ \\
-		at level min($L_c, L_{c^{\prime}}$) and scale max($S_c, S_{c^{\prime}}$).\\
-		\noindent \textbf{Sub($\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk}$):} Returns $(\llbracket c-c^{\prime}\rrbracket_{pk})$ \\
-		at level min($L_c, L_{c^{\prime}}$) and scale max($S_c, S_{c^{\prime}}$).\\
-		\noindent $\textbf{Mul}_{ct}$$(\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk})$: Returns $\llbracket cc^{\prime}\rrbracket_{pk}$ at level min($L_c, l_{c^{\prime}}$), scale ($S_c\times S_{c^{\prime}}$).\\
-		\noindent \textbf{Power}$(\llbracket c\rrbracket_{pk}, n)$: Returns $\llbracket c^{n}\rrbracket_{pk}$ at level $(S_c-\log{n})$\\
-		\noindent \textbf{RotL/R}($\llbracket c\rrbracket_{pk}, k$): Homomorphically rotates $\llbracket c\rrbracket_{pk}$ to the left/right by $k$ times.\\
-		\noindent \textbf{DPubKeySwitch}$(\llbracket c\rrbracket_{pk}, pk^{\prime},{sk_i})$: Returns $\llbracket c\rrbracket_{pk^{\prime}}$\\without decryption.\\
-		\noindent $\textbf{MulByConst}(\llbracket c\rrbracket_{pk}, const)$: Returns $\llbracket c\times const\rrbracket_{pk}$ with scale depends on $S_c$ and $const$, at level $L_c$.\\
+		\noindent \textbf{SecKeyGen($1^\lambda$):} 根据安全参数$ \lambda $返回私钥集合 ${sk_i}$，
+		即对于参与方$P_i$来说. 本地生成私钥$ sk_i $。\\
+		\noindent \textbf{DKeyGen(${sk_i}$):} 返回私钥持有方合作生成的公钥 $pk$。\\
+		\noindent \textbf{DRelinKeyGen(${sk_i}$):} 返回协作生成的重线性化公钥 $rlk$。\\
+		\noindent \textbf{DRotKeyGen(${sk_i}$):} 然后协作生成的元素位置旋转公钥 $rtk$.\\
+		\noindent \textbf{Encode($msg$):} 将复数向量$msg$编码，返回明文多项式 $\overline{p}\in R_{Q_{L}}$，其缩放量为$S$。\\
+		\noindent \textbf{Decode($\overline{p}$):} 对于明文多项式$\overline{p}\in R_{Q_{L}}$和对应的缩放量$S_{\overline{p}}$，返回解码之后的复数向量$\overline{p}$。\\
+		\noindent \textbf{DDecrypt($\llbracket c\rrbracket_{pk}, {sk_i}$):} 对于密文 $\llbracket c\rrbracket_{pk}\in R^2_{Q_{L}}$ 和密文缩放量 $S_c$， 返回明文 $p\in R_{Q_{L}}$，其缩放量为$S_c$。\\
+		\noindent \textbf{Enc($pk, \overline{p}$):} 返回密文 $\llbracket c\rrbracket_{pk}\in R_{Q_{L}}$ \\
+		\noindent \textbf{Add($\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk}$):} 返回 $(\llbracket c+c^{\prime}\rrbracket_{pk})$ \\
+		密文等级为min($L_c, L_{c^{\prime}}$)， 缩放量为 max($S_c, S_{c^{\prime}}$).\\
+		\noindent \textbf{Sub($\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk}$):} 返回 $(\llbracket c-c^{\prime}\rrbracket_{pk})$ \\
+		密文等级为min($L_c, L_{c^{\prime}}$)，缩放量为max($S_c, S_{c^{\prime}}$).\\
+		\noindent $\textbf{Mul}_{ct}$$(\llbracket c\rrbracket_{pk}, \llbracket c^{\prime}\rrbracket_{pk})$: 返回 $\llbracket cc^{\prime}\rrbracket_{pk}$， 密文等级为min($L_c, l_{c^{\prime}}$)，缩放量为($S_c\times S_{c^{\prime}}$).\\
+		\noindent \textbf{Power}$(\llbracket c\rrbracket_{pk}, n)$: 返回 $\llbracket c^{n}\rrbracket_{pk}$，密文等级为 $(S_c-\log{n})$\\
+		\noindent \textbf{RotL/R}($\llbracket c\rrbracket_{pk}, k$): 同态密文元素旋转操作（左移或者右移$k$次）。\\
+		\noindent \textbf{DPubKeySwitch}$(\llbracket c\rrbracket_{pk}, pk^{\prime},{sk_i})$: 不解密的前提下，返回公钥切换后的密文$\llbracket c\rrbracket_{pk^{\prime}}$。\\
+		\noindent $\textbf{MulByConst}(\llbracket c\rrbracket_{pk}, const)$: 返回密文$\llbracket c\times const\rrbracket_{pk}$，其缩放量取决于 $S_c$ 和 $const$，密文等级为$L_c$.\\
 		% \noindent $\textbf{InnerSum}(\llbracket c\rrbracket_{pk}, batchSize, n)$: Returns $\llbracket c^{\prime}\rrbracket_{pk}$, the sum of $n$ sub-vector with $batchSize$ dimensions in vector hidden in $\llbracket c\rrbracket_{pk}$.
-		\noindent $\textbf{InnerSum}(\llbracket c\rrbracket_{pk})$: Returns $\llbracket c^{\prime}\rrbracket_{pk}$, the inner sum of vector hidden in $\llbracket c\rrbracket_{pk}$.
+		\noindent $\textbf{InnerSum}(\llbracket c\rrbracket_{pk})$: 返回密文 $\llbracket c^{\prime}\rrbracket_{pk}$，解密后的第一个元素表示密文 $\llbracket c\rrbracket_{pk}$的内部元素和。
 		% \textbf{Our expansion, two sub-steps in DDecrypt:}\\
 		% \textbf{1.PartDec}($\llbracket c\rrbracket_{pk},sk_i$): Returns a part of the decryption information $h_i$.\\
 		% \textbf{2.AggDec}$(\llbracket c\rrbracket_{pk},\{h_i\})$: Returns the plaintext $p\in R_{Q_{L}}$ with scale $S_c$.
 	\end{framed}
-	\caption{Frequently used cryptographic operations in MHE}
+	\caption{MHE中常用的密文操作}
 	\label{f1}
 \end{figure}
 
@@ -353,7 +352,7 @@ $(\rm \romannumeral4)$ 其支持安全的合作公钥切换操作，即在不解
 
 在训练的初始化阶段，AS将使用用户侧公钥$ pk_u $加密的本轮全局模型参数
 $ \ctx[pk_u]{W_g} $发送给所有参与本轮训练的用户。如上文所属，用户侧私钥$\{sk_u^{U}, sk_u^{AS}\}$由参与方$P_i$和$AS$分别持有，然后我们让这两个私钥持有方协同调用安全两方协同解密算法\ref{a-1}
-\begin{equation}
+\begin{equation}\label{dec}
 	W_g \leftarrow \textbf{Sec2Dec}(\{sk_u^U, sk_u^{AS}\}, \llbracket W_g\rrbracket_{pk_u})
 \end{equation}
 让$ P_i $获取到全局模型明文$ W_g $的同时，对AS保密。
@@ -456,8 +455,363 @@ AS和CSP对聚合后的全局梯度密文执行安全两方公钥切换协议，
 \textbf{讨论：}本方案中对用户参数和基准之间的欧式距离平方值进行了解密操作，我们认为这个操作不会侵犯到用户的数据隐私。首先很明显AS获取的一维距离信息，无法推导处任何一个参数的具体信息，包括参数的大小、方向以及单个元素的正负。文献\cite{geiping2020inverting}提出的针对梯度的数据重构方案，可以根据梯度之间的余弦相似度，重构用户的训练样本，但是这个方案需要知道梯度的正负，而在我们的方案中，AS是无法获取这个信息的，所以不会泄露用户的数据隐私。
 
 \section{理论分析}\label{ana}
+本节我们首先对提出的方案进行了安全性和收敛性分析，最后分析了本方案的效率表现。
+\subsection{安全性分析}
+本小节我们证明方案对用户本地参数和全局聚合参数，做到了对于半诚实服务器的完全保密。
 
+CKKS同态加密方案的语义安全性（Semantic security）基于环上的RLWE难题\cite{cheon2017homomorphic, lindner2011better, lyubashevsky2010ideal}，实现了对于目前前沿攻击方式的逐比特安全，并且可以被Albrecht提出的LWE-Estimator所计算 \cite{albrecht2019homomorphic, albrecht2015concrete}。方案涉及到的分布式密文计算协议，即DKeyGen($\cdot$)，DPubKeySwitch($\cdot$), 和 DDecrypt($\cdot$)，其安全性被Mouchet等人证明 \cite{mouchet2020multiparty}，保证了这些协议在被半诚实计算参与方执行时的安全性。我们提出了如下命题，并且给出证明。
+%真实视图和模拟视图不可区分
+%涉及到许多的子协议，我们使用hybrid augment 混合论证方式来对整个协议的安全性进行论证。
+%定义一个模拟器，行为是对REAL进行一些改造，改完之后发现计算无法区分。
+\begin{proposition}[对半诚实服务器的安全性]\label{pro1}
+	对于给定的安全参数$ \lambda $，FL的参与方集合$\mathcal{U}$（包括用户$\{P_1, P_2,...,P_N\}$），以及FL服务提供商集合$\mathcal{S} = \{AS, CSP\}$，我们以随机变量$\mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}$表示半诚实服务器集合$\mathcal{S}$在协议执行过程中获取的所有视图，存在一个概率多项式时间模拟器$\mathcal{SIM}$，其输出的模拟视图$ \mathcal{S I} \mathcal{M}_{\mathcal{S}}^{U, \lambda} $与真实视图$\mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}$之间计算不可区分（computationally indistinguishable），即：
+	$$
+		\mathcal{S I} \mathcal{M}_{\mathcal{S}}^{U, \lambda} \stackrel{c}{\equiv} \mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}
+	$$，
+	其中$\mathop{\equiv}\limits^{c}$表示计算不可区分。
+\end{proposition}
+
+\begin{proof}
+	根据真实视图$\mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}$的定义，其包含所有服务器集合$\mathcal{S}$在执行上诉协议的中间状态以及接收到的信息。我们采用标准的混合论证（hybrid argument）\cite{bonawitz2017practical, xu2020privacy}来证明命题\ref{pro1}。对于安全参数$ \lambda $，我们定义了概率多项式模拟器$\mathcal{SIM}$，其可以对真实视图 $\mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}$中的随机变量进行一系列的修改，生成模拟视图$ \mathcal{S I} \mathcal{M}_{\mathcal{S}}^{U, \lambda} $，下面的混合论证集合可以说明，模拟视图$ \mathcal{S I} \mathcal{M}_{\mathcal{S}}^{U, \lambda} $和真实视图$\mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}$之间具有计算不可区分性，细节描述如下所示。
+\end{proof}
+
+\begin{hybrid}\label{h1}
+	在本论证中，我们初始化一个与执行协议产生的真实视图$\mathcal{R} e a l_{\mathcal{S}}^{U, \lambda}$分布不可区分的模拟视图。
+\end{hybrid}
+
+\begin{hybrid}\label{h2}
+	在本论证中，我们模拟用户和AS之间的协同解密过程，即等式\ref{dec}的协同执行，让用户以随机变量$\ctx[pk_u]{\alpha_i}$替换本地部门解密结果$\ctx[pk_u]{c_i}$，其安全性由MHE中的DDecrypt($\cdot$)保证，所以本论证与前一个论证\ref{h1}不可区分。
+\end{hybrid}
+
+\begin{hybrid}\label{h3}
+	在本论证中，我们改变模拟的用户集合$\mathcal{U}$中良性用户的参数加密上传行为，每个良性用户$P_i$加密一个随机采样的向量$\alpha_i$，而不是真实的用户模型更新参数$W_i$。这时只有上传的密文发生了变化，CKKS的语义安全性以及AS与CSP之间的不共谋，保证了本论证和前一个论证\ref{h2}不可区分。
+\end{hybrid}
+
+\begin{hybrid}\label{h4}
+	在本论证中，我们改变安全欧式距离计算\ref{a2}（SecDis）的输入，以加密的随机变量$\llbracket \alpha_{g}^{t-1}\rrbracket_{pk_s}$和$\llbracket \beta_i^{t}\rrbracket_{pk_s}$，替换原来的输入$\llbracket W_{g}^{t-1}\rrbracket_{pk_s}$和$\llbracket W_i^{t}\rrbracket_{pk_s}$。由于只有密文内容发生了改变，MHE的语义安全性和AS与CSP之间不共谋的性质，保证了本论证和前一个论证\ref{h3}不可区分。
+\end{hybrid}
+
+\begin{hybrid}\label{h5}
+	在本论证中，我们假设在安全欧式距离计算\ref{a2}中，AS向CSP发送的是加密的随机变量$\llbracket \alpha_i\rrbracket_{pk_s}$，而不是计算所得的欧式距离平方$\llbracket d_i \rrbracket_{pk_s}$，其中$i \in [1...N]$。尽管CSP持有公钥$pk_s$对应的两份私钥中的一份$sk_s^{CSP}$，MHE的联合解密过程需要保证所有私钥持有方的参与，因此结合AS与CSP不共谋的特性，可以保证CSP无法完成解密，从而保证本论证和前一个论证\ref{h4}不可区分。
+\end{hybrid}
+
+\begin{hybrid}\label{h6}
+	在本论证中，我们将AS执行的密文线性聚合等式\ref{e3}中的输入$\llbracket W_i\rrbracket_{pk_s}$修改为加密随机变量$\llbracket \alpha_i\rrbracket_{pk_s}$，计算结果的密文发生了改变，MHE的语义安全性以及服务器之间不共谋的性质，保证了此论证和前一个论证\ref{h5}无法区分。
+\end{hybrid}
+
+\begin{hybrid}\label{h7}
+	在本论证中，我们改变AS和CSP执行安全公钥切换算法时的输入，即执行等式\ref{e4}时的输入，以随机变量$\llbracket \alpha_g\rrbracket_{pk_s}$替换聚合后的全局模型参数$\llbracket W_g\rrbracket_{pk_s}$，此时也只有密文内容发生了变化，CKKS的语义安全性以及服务器之间的不共谋假设，保证了此论证和前一个论证\ref{h6}不可区分。
+\end{hybrid}
+
+\begin{hybrid}\label{h8}
+	在本论证中，我们修改安全公钥切换算法的中间计算结果，即模拟CSP计算得到随机变量$\beta_{CSP}$，而不是部分公钥切换信息$c_{CSP}$，其安全性由MHE中的DPubKeySwitch($\cdot$)保证，因此本论证和前一个论证\ref{h7}不可区分。
+\end{hybrid}
+
+以上混合证明证明了存在一个概率多项式模拟器$ \mathcal{SIM} $可以按照上述方式生成模拟视图，并让其和真实视图在计算上做到不可区分，因此证明了半诚实的AS和CSP在安全协议执行过程中给，无法窃取用户的数据隐私。
+
+%TODO 加一个用户无法侵犯用户隐私
+
+\subsection{收敛性分析}
+本节我们证明本方案全局模型在有拜占庭用户的前提下，依然能够收敛的性质，首先我们提出如下命题：
+\begin{proposition}[误差项]\label{pro2}
+	良性参与方生成的模型参数与拜占庭节点生成的模型参数之间存在一个误差项$\epsilon$，即满足以下等式：
+	$$
+		\sum_{u\in U}W_u=   \sum_{u\in B}W_u^{\kappa} + \epsilon	
+	$$
+	其中$U$和$ B $分别表示良性用户集合以及拜占庭用户集合。
+\end{proposition}
+
+\begin{proof}
+	良性用户集合的目标是联合训练得到目标模型参数$W^{\star}$，而拜占庭用户的训练目标则是让全局模型向恶意目标$W^{\kappa}$发展。
+	每一轮的模型参数取决于用户利用本地数据得到的梯度$G$，即在第$t$轮次，$W^{t} = W^{t-1} - \eta G$，其中$ \eta $是本地训练学习率。
+	实现恶意攻击的方式是控制拜占庭节点，形成具有恶意目标的梯度$G^{\kappa}$，而良性节点得到梯度的方式是利用本地独立同分布的数据，生成梯度：
+	$$
+		G^{\star} \leftarrow \nabla_{W} \mathcal{L}_{f}(D,W)
+	$$
+	其中所有良性用户$G^{\star}$的期望$E[G^{\star}]=g$，$g$表示全局良性梯度的无偏估计。因此，良性梯度聚合得到的全局参数的期望$E[W^{\star}]$，也是全局良性模型参数$w$的无偏估计。由于恶意梯度$G^{\kappa}$的目标是扰乱良性梯度$G^{\star}$，所以这两者之间存在明显的差距$\tau$，$\tau = G^{\star}-G^{\kappa}$，因此可以得出参数之间也有明显的差距$W^{\kappa} = W^{\star} - \eta \tau$，所以可知：
+	\begin{align*}
+		\sum_{x\in B}W_x^{\kappa} & = \frac{|B|\sum_{x\in U}W_x^{\star}}{|U|} - |B|\eta\tau                                \\
+		& = (\frac{|B|}{|U|}-1)\sum_{x\in U}W_x^{\star} + \sum_{x\in U}W_x^{\star} - |B|\eta\tau \\
+		& = \sum_{x\in U}W_x^{\star} + (\frac{|B|}{|U|}-1)|U|w - |B|\eta\tau
+	\end{align*}
+	良性参数和恶意参数之间的误差项，因为其不同的目标而必然存在，即$\sum_{u\in U}W_u=   \sum_{u\in B}W_u^{\kappa} + \epsilon$，其中$ \epsilon = (\frac{|B|}{|U|}-1)|U|w - |B|\eta\tau $。
+\end{proof}
+
+基于以上误差项的存在，我们进一步给出全局模型收敛性的命题和证明：
+\begin{proposition}[收敛性]
+	在执行完一定轮次第\ref{friendly-alg}节和第\ref{PBFL}节中的安全鲁棒聚合方法后，全局模型将收敛至良性用户的目标模型参数。
+\end{proposition}
+
+\begin{proof}
+	假设参与方$P_x$的聚合权重$\gamma_{x}$由一个抽象的函数$f_s(P_x,t)$决定，其中$t$表示当前训练轮次，$P_x$表示来着参与方集合$U$或者集合$B$的用户，其中$ U $表示良性用户集合，而$ B $表示拜占庭用户集合。本方案假设拜占庭用户的比例上限为$50\%$，即$\abs{B} <\abs{U}$。全局模型的收敛性取决于是否由良性用户主导整个训练过程，即满足以下条件：
+	\begin{equation*}
+		\begin{split}
+			\mbox{条件}\ 1:{\forall}P_x \in B, f_s(P_x,t)\rightarrow 0 \\
+			\mbox{条件}\ 2:{\forall}P_x \in U, f_s(P_x,t)\rightarrow 1
+		\end{split}
+	\end{equation*}
+	
+	我们把$W_x^{\star}$假设为良性用户$P_x$的理想模型参数，根据命题\ref{pro2}可知，良性用户参数和恶性用户参数之家存在一个误差项：$\sum_{x\in U}W_x^{\star}=   \sum_{x\in B}W_x^{\kappa} + \epsilon$，利用到这个特性，我们的鲁棒聚合方案可以识别处拜占庭用户然后降低其聚合权重 $\gamma_x$。只要拜占庭节点上传恶意的模型参数，误差项$\epsilon$会越来越大，让我们赋予其的聚合权重就会越接近于0，即对于拜占庭用户$P_x \in B$，$f_s(P_x, t)\rightarrow 0$，这满足了条件1。因此良性用户的聚合权重则满足：
+	$$
+		\lim_{t \to \infty}\sum_{x \in U} \gamma_x = 1
+	$$
+	这意味着良性用户聚合权重的和无限接近于1，满足了条件2。在真实数据集上的实验结果如表\ref{t1}所示，也证明了我们命题的正确性。
+	
+	随着以上两个条件的满足，良性用户将逐渐主导整个FL训练过程，最后实现全局模型的收敛目标。
+\end{proof}
+
+\subsection{效率分析}
+本节我们对本方案的运行效率进行分析，同时和类似方案进行了效率对比，以展现本方案在效率上的优势。首先对安全计算协议计算开销进行分析，然后再对通信开销进行分析。
+
+\subsubsection{计算开销分析}
+在本方案中，服务器侧的计算开销主要集中在安全的参数聚合以及分发阶段，这个阶段服务器需要在密文上计算用户参数到基准的欧式距离平方，然后在密文上完成参数的聚合和分发。以下我们分析执行一轮协议，具体的开销情况。
+
+假设参与方数量为$N$，其模型参数维度为$M$，首先分析安全欧式距离计算协议\ref{a2} \textbf{SecDis}，对于其涉及到的五次密文简单线性操作，复杂度为$O(5*M)$，对于涉及到的内部元素求和协议\textbf{InnerSum($\cdot$)}，其复杂度为$O(Mlog(M) + M)$，因此总的复杂度为$O(6*NM+NMlog(M))$。然后AS获取到了距离向量明文$d$（长度为$N$），与模型参数维度无关，所以后续权重的计算非常高效，复杂度为$O(Nlog(N) + 3*N)$，其中$O(Nlog(N))$表示对向量的取中值操作，$O(3*N)$代表三次简单的明文向量操作。
+最后在聚合密文的公钥切换阶段，其中有三次简单密文线性操作，复杂度为$ O(3*M) $。
+对于用户侧的计算开销来说，开销主要随着模型参数的维度$M$和数据样本数量$s$的增长而增长，复杂度为$O(Ms)$。
+
+\subsubsection{通信开销分析}
+在本方案中，服务器侧的通信开销主要集中在两个阶段，第一个是欧式距离计算阶段，CSP协助解密距离信息，第二个是聚合后密文的公钥切换阶段，需要私钥持有方AS和CSP联合完成公钥的切换。
+在第一阶段，对于$N$个用户，AS需要发送$N$个密文给CSP，其中每个密文包含维度为$M$的参数向量，通信复杂度可以表示为$O(NM)$，然后CSP完成对所有用户距离信息的部分解密信息计算，发送给AS，其通信复杂度也为$O(NM)$。
+在第二个阶段，AS需要将聚合后的密文发送给CSP，通信开销为$O(M)$，然后CSP将计算结果发送给AS，通信复杂度为$O(M)$。
+总体上来说，AS和CSP之间仅进行了两个轮次的通信，并且没没轮次通信的通信量都不大。
+
+为了展示本方案在效率上的领先，我们逐协议比较了类似工作\cite{liu2021privacy}和本方案的之间开销差异，其结果如表\ref{cmp2liu}所，可以看到本方案在计算和通信开销上都有一定的优势。
+
+我们同样进行了本方案和前言工作在不同特性上的对比，具体如表\ref{detail-cmp}所示，可以看出我们的方案兼顾了用户数据隐私、对拜占庭节点的容错以及计算效率上的领先。
+
+\begin{table*}
+	\centering
+	\caption{Comparison with work \cite{liu2021privacy} on computation complexity and communication complexity}
+	\label{cmp2liu}
+	 \scalebox{0.9}{
+		\renewcommand{\arraystretch}{1.2}
+		\begin{tabular}{c|c|c|c}
+			\toprule
+			% \hline
+			% \LEFTcircle \Circle \CIRCLE 
+			\textbf{Proposed Schemes}               &\textbf{\# of Phases}      & \textbf{Computation Complexity}           & \textbf{Communicaiton Complexity}             \\
+			\midrule
+			\multirow{4}{*}{PEFL \cite{liu2021privacy}}& 1 &$O(NMlog(N))$ &$O(NM+M)$\\
+			& 2 & $O(5*NM)$ &$O(2*NM+N)$ \\
+			& 3 & $O(6*NM)$ &$O(2*NM)$ \\
+			& 4& $O(4*M)$ &$O(2*M)$  \\
+			% \hline
+			% \multirow{4}{*}{Our PBFL} 
+			\hline
+			\multirow{4}{*}{Our PBFL}& 1 &$O(5*NM + NMlog(M)))$ &$O(2*NM)$\\
+			& 2 & $O(Nlog(N)+3*N)$ & - \\
+			& 3 & $O(3*M)$ &$O(2*M)$ \\
+			% & 4& $O(4*M)$ &$O(2*M)$  \\
+			% Our PBFL                                & $O(5*NM + NMlog(M))) + O(Nlog(N)+3*N) + O(3*M)$                           & $O(2*NM) +  O(2*M)$ \\
+			\bottomrule
+			% \hline
+		\end{tabular}
+		 }
+\end{table*}
+
+
+% \footnote{FLTrust based schemes requires root data from users, which violates user privacy}
+
+\begin{table*}
+	\centering
+	\caption{Coarse-grained comparison with prior works on detailed information for FL}
+	\label{detail-cmp}
+	 \scalebox{0.7}{
+	 			\renewcommand{\arraystretch}{1.2}
+	 	\begin{tabular}{l|ccccc}
+	 		\toprule
+	 		% \hline
+	 		% \LEFTcircle \Circle \CIRCLE 
+	 		\textbf{Proposed Schemes}                & \makecell[c]{\textbf{No Root Data}\\ \textbf{in Server}}    &\makecell[c]{\textbf{Protect Privacy of}\\ \textbf{User' Local Model}} &\makecell[c]{\textbf{Protect Privacy of}\\ \textbf{Global Model}} & \makecell[c]{\textbf{Computation and}\\ \textbf{Communication overhead}} & \makecell[c]{\textbf{Robustness again}\\ \textbf{Byzantine users}}             \\
+	 		\midrule
+	 		PEFL \cite{liu2021privacy}                   & \ding{51} & \ding{51}     &\ding{51}     & Medium   & Medium                    \\
+	 		FLAME \cite{nguyen2022flame}                   & \ding{51} & \ding{51}     &\ding{55}     & High   & Medium $\sim$ High            \\
+	 		FLOD \cite{dong2021flod}                   & \ding{55} & \ding{51}     &\ding{55}     & High     & High                 \\
+	 		SecureFL \cite{hao2021efficient}                   & \ding{55} & \ding{51}     &\ding{55}     & Medium  & High                      \\
+	 		Our PBFL                   & \ding{51} & \ding{51}     &\ding{51}     &Low     & Medium                  \\
+	 		\bottomrule
+	 		% \hline
+	 	\end{tabular}
+ 	}
+\end{table*}
 
 \section{实验评估}\label{eva}
+在本节，我们在真实数据集上做了一系列的实验，以此证明方案在提升FL隐私性的同时，保证了对拜占庭节点的鲁棒性。
+我们所有的实验都在一台配置有Ubuntu 20.04, Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz CPU 和 64GB RAM 的主机上进行，其中参与方和服务器分别用不同的进程来模拟。
+
+\subsection{实验初始化}
+我们主要从两个角度来评估方案的性能，第一个是方案提出的聚合算法在全局模型上的准确率表现；第二个是面对典型非目标性的拜占庭攻击的鲁棒性。为了展示本方案的优越性，我们复现了四种典型的FL模型参数聚合方案进行对比分析，分别是FedAvg，Krum，Median 和 Trimmed Mean方案。
+
+\subsection{攻击描述}
+我们的实验主要模拟了两种典型的非目标性拜占庭攻击：高斯噪声攻击（Gaussian attack，GA）和标签反转攻击（Label-flipping attack，LFA）。
+为了模拟GA的攻击场景，被敌对方$\mathcal{A}$控制的拜占庭节点将从均值为0，标准差为200的高斯分布中采样随机数，形成随机参数变量再上传。
+为了模拟LFA的攻击场景，我们将被敌对方$\mathcal{A}$控制的拜占庭节点，将其数据的真实标签$y$，对应转换为$9-y$（数据毒化），其模型训练过程与良性用户一致。
+
+\subsection{数据集和模型架构}
+为了评测模型性能，我们选择了两个经典了图像分类任务数据集：$(\rm \romannumeral1)$ MNIST 数据集，其包含$ 60000 $个大小为$28 \times 28$的手写数字图片作为训练集，还有同规格图片$10000$份作为测试集。$(\rm \romannumeral2)$ CIFAR-10 数据集，包含$60000$张彩色图片，其中$50000$张用于训练集，$10000$用于测试集。这些图片大小为$32\times 32$像素，共有十个类别，每个类别有$6000$个样本。
+MNIST数据集训练的模型拥有两个全连接层，参数设置分别为$724 \times 100$和$100 \times 10$，一共大概有$80k$个浮点参数。
+CIFAR-10数据集训练所用的模型，我们使用的是由TensorFlow在线教程\footnote{URL: https://www.tensorflow.org/tutorials/images/cnn?hl=en}中使用的简单网络结构，其包含三层卷积层和两层全连接层，一共大约$123k$个浮点模型参数。
+
+\subsection{模型训练超参数}
+我们将FL中参与训练的用户固定为51，对于每次训练来说，我们将批处理大小设置为$2^7$，SGD的动量（momentum）设置为$0.9$，初始学习率设置为$0.1$。除此之外，我们用$\delta$表示每轮参与聚合的恶意节点比例。
+
+\subsection{实验结果}
+本节从测试准确率和聚合权重数据两方面对本方案进行评估。
+
+\subsubsection{准确率测试}
+许多因素影响全局模型的准确率，其中包括模型的容量、用户数据的数量和质量、训练的轮次以及拜占庭节点的占比。
+本方案注重于FL的隐私和拜占庭鲁棒性，所以我们需要在保证用户数据隐私不被侵犯的前提下，实现对拜占庭节点的鲁棒聚合。
+因此我们改变拜占庭节点的比例以及攻击方式，观察本方案和对比方案在全局模型准确率的区别。
+值得注意的是，我们对CIFAR-10数据集使用的模型架构相对简单，所以全局模型的准确率整体偏低。
+但是我们的重点在比较不同鲁棒聚合方案在准确率上的差异，我们从以下三个方面来比较拜占庭节点对不同鲁棒聚合方案的影响。
+
+\textbf{不同拜占庭节点占比的影响：}直观的说，拜占庭节点占比越高，能够有效参与训练的用户数据就越少，也就导致了较低的全局模型准确率。
+图\ref{f2}展示了不同的拜占庭节点占比对全局模型准确率的影响，我们观察到所有针对拜占庭节点的防御方案，准确率都优于FedAvg（平均聚合所有参数）。
+%注意我们在对比实验中使用FedAvg方法时，没有添加任何拜占庭节点，以此作为比较的基准。
+在MNIST训练任务受到攻击方式为GA的敌对方影响时，所有的防御方案包括本方案、Krum、Median 以及 Trimmed Mean都能在$ 50\% $及以下占比的恶意节点中，实现较高的全局模型准确率。
+但是在面对LFA攻击时，我们的方案在恶意节点占比较高时（$40\%$或以上），有比较明显的准确率优势，这得益于我们的拜占庭鲁棒聚合方案对聚合权重的自适应调整，较大程度上避免了恶意参数的影响。
+对于CIFAR-10数据集来说，面对GA攻击时，本方案和Trimmed Mean、Median的准确率表现在第一梯对，都能实现防御$50\%$及以下拜占庭节点占比的攻击。
+在面对LFA攻击时，本方案对于攻击防御的效果最好，在不同占比的拜占庭节点中都优于其它方案。
+我们的方案可以有效识别拜占庭用户，然后赋予较低甚至可忽略的聚合权重，充分利用良性用户的数据来联合训练。
+同时我们观察到Krum方法的准确率表现明显低于其它方案。一个合理的解释是Krum最后只选择一个用户模型参数作为聚合参数，这不能很好的利用所有的良性用户产生的参数。
+正如图\ref{f2}所示，本方案对比其它基于明文设计的方案，也有比较明显的准确率优势。
+
+\begin{figure*}[htb]
+	\centering
+	% \vspace{-0.2in}
+	\subfloat[MNIST with GA attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/mnist-GA.png}
+		\end{minipage}
+	}
+%	\hspace{-1.0in}
+	\subfloat[MNIST with LF attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/mnist-LF.png}
+		\end{minipage}
+	}
+	
+%	\vspace{-0.12in}
+	
+	\subfloat[CIFAR-10 with GA attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/cifar-GA.png}
+		\end{minipage}
+	}
+%	\hspace{-1.0in}
+	\subfloat[CIFAR-10 with LF attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/cifar-LF.png}
+		\end{minipage}
+	}
+	\caption{Comparison of accuracy with different proportions of Byzantine users}
+	\label{f2}
+\end{figure*}
+
+\textbf{训练轮次对准确率的影响：}随着训练轮次的增加，全局模型可以更好的捕捉有效数据的特征，进而获取较高的全局模型准确率。
+本方案不考虑由模型过小或过大造成的欠拟合或者过拟合，主要比较不同方案之间的准确率差异。
+在图\ref{f3}中，我们对比了三种防御方案在不同训练轮次的全局模型准确率表现，其中选择的三种方案是上文中表现相对较好的方案，分别是本方案、Median和Trimmed Mean。
+我们将恶意节点占比固定为$20\%$，即将$51$个用户中的10个设置为拜占庭用户。
+然后在图\ref{f3}中，展示了三种方案在不同攻击下，最后100轮次的准确率变化，可以观察到本方案整体上在准确率和稳定性上稍优于其它两种方案，其中优势在被LFA攻击时最明显。
+值得注意的是，对比的其它方案都是基于参数明文来辨别拜占庭用户，本方案实现了密文上的恶意用户过滤，同时还做到了性能优于其它方案。
+
+\begin{figure*}[htb]
+	\centering
+	% \vspace{-0.2in}
+	\subfloat[MNIST with GA attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/mnist-GA-2.png}
+		\end{minipage}
+	}
+%	\hspace{-1.0in}
+	\subfloat[MNIST with LF attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/mnist-LF-2.png}
+		\end{minipage}
+	}
+	
+%	\vspace{-0.12in}
+	
+	\subfloat[CIFAR-10 with GA attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/cifar-GA-2.png}
+		\end{minipage}
+	}
+%	\hspace{-1.0in}
+	\subfloat[CIFAR-10 with LF attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/cifar-LF-2.png}
+		\end{minipage}
+	}
+	\caption{Comparison of accuracy with different training rounds}
+	\label{f3}
+\end{figure*}
+
+\textbf{密文运算的影响：}本方案使用的MHE加密方式，基于CKKS全同态加密，其支持浮点数的加密运算，但是会带来一定的舍入误差。
+因此为了弄清楚密文计算对方案准确率的影响，我们将聚合方法的明文实现（Plaintext PBFL，Pt-PBFL）和密文实现（PBFL）进行了对比。图\ref{f4}展示了比较结果，可以看出密文实现对比明文实现基本没有准确率的差距。
+我们分析原因是在神经网络的运算中，一定的舍入误差不影响最后的模型准确率，这也证明了CKKS方案非常适合用户神经网络计算中的隐私保护。
+
+\begin{figure}[htb]
+	\centering
+	% \vspace{-0.2in}
+	\subfloat[MNIST with GA attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/tmp-GA.png}
+		\end{minipage}
+	}
+	% \hspace{-1.0in}
+	\subfloat[MNIST with LF attack]{
+		\begin{minipage}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[scale=0.4]{img/tmp-LF.png}
+		\end{minipage}
+	}
+	\caption{Comparison of accuracy with Pt-PBFL}
+	\label{f4}
+\end{figure}
+
+\subsubsection{聚合权重测试}
+%TODO 弄清楚权重表的数据是单个值还是平均值。
+从前面的实验结果来看，本方案在准确性和鲁棒性上，都有一定的优势。
+于是我们对方案在不同数据集不同攻击方式下，具体的聚合权重分配做了统计，其结果如表\ref{t1}所示。
+我们固定拜占庭节点的数量为$30\%$，即51个用户中的15个。结果显示基本上所有的聚合权重都分配给了良性用户，分配给恶意用户的权重可忽略不计。
+这也意味着本方案可以有效的识别恶意用户并降低甚至消除其聚合权重，避免恶意用户干扰的同时，充分利用良性用户上传的参数联合训练，所以本方案在性能上总体占优。
+
+\begin{table}[htbp]
+	% \centering
+	\begin{center}
+		\caption{Aggregation Weights in PBFL}
+		\label{t1}
+		% \resizebox*{\linewidth}{15mm}{
+			\scalebox{0.95}{
+				\renewcommand{\arraystretch}{1.2}
+				\begin{tabular}{c|c|c|c|c}
+					\toprule
+					% \hline
+					& CIFAR-LF & MNIST-LF & CIFAR-GA & MNIST-GA \\
+					\midrule
+					Benign users    & 0.9999   & 0.9988   & 1.0      & 1.0      \\
+					\hline
+					Byzantine users & 0.0001   & 0.0012   & 0.0      & 0.0      \\
+					% \hline
+					\bottomrule
+			\end{tabular}}
+		\end{center}
+	\end{table}
 
 \section{本章小结}\label{con}
+在本方案中，我们提出了一个面向拜占庭容错的隐私保护联邦学习框架（Privacy-preserving Byzantine-robust FL，PBFL）。
+该方案可以在保证用户数据强隐私的同时，实现对典型非目标性拜占庭攻击的防御。
+同时我们也提供了详尽的安全性分析和收敛性分析，证明了本方案的安全性。
+除此之外，我们还在真实世界的数据集上做了丰盛的对比实验，展现了本方案在准确率和鲁棒性上的优势。
+然而，本方案的鲁棒性假设基于用户间数据分布的一致性（independent identically distributed data，IID），对于真实中的非独立同分布数据（non-independent identical distribution data, Non-IID）的联合训练，会有一定准确率的下降。对于Non-IID数据的隐私鲁棒聚合问题，我们将在后续的研究工作中尝试解决。
