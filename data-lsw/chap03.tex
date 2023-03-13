@@ -21,7 +21,7 @@
 %然而，当参数被加密时，建立防御将是一个重大挑战，这意味着在密码文本域下识别拜占庭用户。
 
 学者们提出了一系列工作\cite{liu2021privacy, dong2021flod, nguyen2022flame, hao2021efficient, so2020byzantine}，致力于同时实现提升用户数据隐私以及聚合方案的拜占庭鲁棒性。
-PEFL\cite{liu2021privacy} 使用同态加密（Homomorphic Encryption，HE）将用户本地梯度 $G_i$ 加密之后再上传到服务提供商，由两个半诚实非共谋的服务器完成鲁棒聚合，为了实现一些非线性操作，PEFL设计的四个安全计算协议都需要将 $G_i$ 使用随机数扰动之后，再进行解密操作。这里对于一个梯度 $G_i$ 的所有维度都使用相同的随机数进行扰动，这会泄露梯度数据的数据分布，存在隐私泄露的风险。FLOD \cite{dong2021flod} 和 SecureFL \cite{hao2021efficient} 方案都是基于FLTrust \cite{cao2020fltrust} 的根数据集（root dataset）思想，即服务提供商收集一小部分用户数据，用于判断和过滤恶意参数，显然这种方法会侵犯参与方的隐私。FLAME \cite{nguyen2022flame} 精心设计了拜占庭鲁棒聚合算法，并且结合ABY\cite{demmler2015aby} 以及隐私保护DBSCAN算法 \cite{bozdemir2021privacy} 实现了对用户梯度的隐私保护，但是其设计的鲁棒聚合算法涉及到安全两方计算（Secure 2-Party Computation，2PC）中开销较大的计算，其中包括梯度间余弦相似度的度量，以及共享份梯度的聚类操作。
+PEFL\cite{liu2021privacy} 使用同态加密（Homomorphic Encryption，HE）将用户本地梯度 $G_i$ 加密之后再上传到服务提供商，由两个半诚实非共谋的服务器完成鲁棒聚合，为了实现一些非线性操作，PEFL设计的四个安全计算协议都需要将 $G_i$ 使用随机数扰动之后，再进行解密操作。这里对于一个梯度 $G_i$ 的所有维度都使用相同的随机数进行扰动，这会泄露梯度数据的数据分布，存在隐私泄露的风险。FLOD \cite{dong2021flod} 和 SecureFL \cite{hao2021efficient} 方案都是基于FLTrust \cite{DBLP:conf/ndss/CaoF0G21} 的根数据集（root dataset）思想，即服务提供商收集一小部分用户数据，用于判断和过滤恶意参数，显然这种方法会侵犯参与方的隐私。FLAME \cite{nguyen2022flame} 精心设计了拜占庭鲁棒聚合算法，并且结合ABY\cite{demmler2015aby} 以及隐私保护DBSCAN算法 \cite{bozdemir2021privacy} 实现了对用户梯度的隐私保护，但是其设计的鲁棒聚合算法涉及到安全两方计算（Secure 2-Party Computation，2PC）中开销较大的计算，其中包括梯度间余弦相似度的度量，以及共享份梯度的聚类操作。
 表\ref{cmp}在隐私性、鲁棒性和效率上对已有工作和我们的工作进行了粗略的对比。
 
 针对以上研究现状，本章提出了一个密文计算友好（即不涉及到开销较大的密文操作）的拜占庭鲁棒聚合方案，
@@ -46,8 +46,8 @@ PEFL\cite{liu2021privacy} 使用同态加密（Homomorphic Encryption，HE）将
 			\midrule
 			PEFL \cite{liu2021privacy}                   & Custom Aggregation + HE & \CIRCLE\LEFTcircle     &\CIRCLE\LEFTcircle     &\CIRCLE\LEFTcircle                       \\
 			FLAME \cite{nguyen2022flame}                   & Custom Aggregation + 2PC & \CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle     &\LEFTcircle\Circle                       \\
-			FLOD \cite{dong2021flod}                   & FLTrust \cite{cao2020fltrust} + 2PC & \CIRCLE\Circle     &\CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle                       \\
-			SecureFL \cite{hao2021efficient}                   & FLTrust \cite{cao2020fltrust} + 2PC & \CIRCLE\Circle     &\CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle                       \\
+			FLOD \cite{dong2021flod}                   & FLTrust \cite{DBLP:conf/ndss/CaoF0G21} + 2PC & \CIRCLE\Circle     &\CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle                       \\
+			SecureFL \cite{hao2021efficient}                   & FLTrust \cite{DBLP:conf/ndss/CaoF0G21} + 2PC & \CIRCLE\Circle     &\CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle                       \\
 			Our PBFL                   & Custom Crypto-friendly Aggregation + MHE & \CIRCLE\CIRCLE     &\CIRCLE\LEFTcircle     &\CIRCLE\CIRCLE                       \\
 			\bottomrule
 			% \hline
