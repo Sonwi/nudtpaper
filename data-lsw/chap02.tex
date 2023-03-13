@@ -3,9 +3,61 @@
 
 \section{隐私保护联邦学习综述}
 \label{sec:ppfl}
+为了解决联邦学习（Federated Learning，FL）中用户直接上传参数造成的数据隐私泄露问题，学者们提出了一系列方案，利用隐私保护技术，在确保正确聚合的前提下，提升FL的安全性。
+这些方案使用到的隐私保护技术主要分为四类，分别是：差分隐私（Differential Privacy，DP）\cite{dwork2006differential}、同态加密（Homomorphic Encryption，HE）\cite{gentry2013homomorphic}、安全多方计算（Secure Multi-Party Computation，MPC）\cite{shamir1979share}以及可信执行环境（Trusted Execution Environment，TEE）\cite{sabt2015trusted}。
+
+\subsection{基于DP的隐私保护联邦学习}
+差分隐私（DP）通过在数据或者参数中添加噪声的方式，来保护参与方的数据或参数隐私，因其提供的隐私基本没有带来额外的计算开销，学者们提出了很多基于DP的隐私保护联邦学习方案\cite{agarwal2018cpsgd, choudhury2019differential, dubey2020differentially, geyer2017differentially, hao2019efficient, hao2019towards, hu2020personalized, rodriguez2020federated, triastcyn2019federated, wei2020federated}。举例来说，
+Geyer等人\cite{geyer2017differentially}通过向聚合后的全局模型参数添加DP噪声，以此避免恶意参与方推理其它参与方的隐私数据，但是会把用户参数直接泄露给聚合服务器。
+Hao等人\cite{hao2019efficient}提出的方案与此不同，其将DP噪声添加在用户本地模型参数，以此保证用户参数的隐私。
+Shokri等人\cite{shokri2015privacy}首先考虑到深度学习中的数据隐私保护问题，让多个深度学习参与方通过分享一部分模型参数来优化模型表现，并且对分享的参数进行了DP扰动用以保证参数的隐私，但是由于DP噪声的加入，该方案需要在准确率和用户数据隐私性之间做取舍。
+为了进一步提升模型的可用性，Abadi等人\cite{abadi2016deep}在使用DP时对隐私成本进行了更加精细的分析，实现了在适度的隐私预算下，以可控的软件复杂度、训练效率和模型成本来训练具有非凸函数的深度神经网络。
+然而，Jayaraman等人\cite{jayaraman2019evaluating}在深度学习网络训练的中，对模型准确率和隐私预算进行了细致的量化分析，发现基于DP的隐私保护深度学习方案，基本不能提供有效的准确率和隐私之间的权衡。
+
+\subsection{基于MPC的隐私保护联邦学习}
+安全多方计算（MPC）技术可以在保证数据隐私的前提下，协调多个参与方安全计算出函数输出，可以用于FL中用户数据或参数的隐私。学者们也提出了很多基于MPC的隐私保护FL方案\cite{bonawitz2017practical, mohassel2017secureml, mugunthan2019smpai, reich2019privacy, sharma2019secure, so2020scalable, xu2019hybridalpha, zhu2020privacy}。举例来说，
+Bonawitz等人\cite{bonawitz2017practical}首先提出了一种双掩码方案，来保护用户上传的参数隐私，其中一个掩码用于保护单个用户参数的隐私（相加聚合之后会抵消），另一个掩码用于保证掉线用户的参数隐私。对于任何一个用户参数，只有一个掩码会被去掉，所以可以保证用户的参数隐私。这种方案显著增加了用户侧的通信轮次。
+Mohasse等人\cite{mohassel2017secureml}以及Bell等人\cite{bell2020secure}利用安全多方计算技术（MPC），将数据以秘密共享的方式，外包给双云服务器，通过设计的安全高效的安全两方结算协议（2PC），实现对加密数据的联合训练，但是这种类型的方案需要用户一直保持在线，给整个系统在真实世界中的部署带来了额外的瓶颈。
+Xu等人\cite{xu2019hybridalpha}利用秘密共享\cite{shamir1979share}和密钥协商技术\cite{hellman1976new}，搭建了支持验证服务器聚合运算的隐私保护FL方案。
+对于基于MPC的方案来说，需要客服的困难是给FL参与方带来的计算和通信开销的增加。
+
+
+\subsection{基于HE的隐私保护联邦学习}
+同态加密（HE）可以让服务器在密文上直接计算用户参数的聚合结果，保证其解密结果和明文计算一致，这个特性用在FL中可以保护用户上传的参数隐私，而又不影响参数的聚合。所以很多基于HE的FL方案\cite{asad2020fedopt, chen2020fedhealth, dong2020eastfly, hao2019efficient, hardy2017private, aono2017privacy, zhang2020batchcrypt, zhang2020privacy, zhao2020smss}被学者们提了出来。举例来说，
+Aono等人\cite{aono2017privacy}利用加性同态加密（Additively Homomorphic Encrytion，AHE）加密用户上传的参数，服务器利用HE在密文上实现聚合，通过让私钥在参与方之间公开而对服务器保密的方式，实现对用户参数的隐私保护。
+Chen等人\cite{chen2020fedhealth}基于AHE提出了针对可穿戴设备的安全联邦学习框架，移动的可穿戴设备通过HE加密本地模型参数然后上传给服务器完成聚合，最后将聚合密文再分发给可穿戴设备。
+Hao等人基于全同态加密（Fully Homomorphic Encryption，FHE）\cite{brakerski2014leveled}提出了隐私保护联邦学习方案。
+为了优化同态加密的计算和通信开销，Zhang等人\cite{zhang2020batchcrypt}对用户梯度进行了批量编码，即将多个梯度值编码为一个长整数，再加密为密文上传到聚合服务器。
+Zhang等人\cite{zhang2020privacy}使用HE加密本地梯度，同时利用分布式选择随机梯度下降算法减小计算开销。
+Ma等人\cite{ma2021privacy}使用HE中CKKS多密钥变种MK-CKKS对参与方持有相同私钥的方式进行了优化，同时修订了多密钥密文线性聚合时的隐私泄露问题，进一步提升了FL的隐私性。
+
+
+\subsection{基于TEE的隐私保护联邦学习}
+可信执行环境（Trusted execution environment，TEE）基于硬件安全的CPU，实现了基于内存隔离的安全计算方式，FL可以将涉及隐私的计算放入TEE，实现对用户数据的隐私保护。学者们提出了一些基于TEE的隐私保护FL方案\cite{tramer2018slalom, mo2019efficient, mo2021ppfl, mo2020darknetz}。举例来说，
+Tramer和Boneh\cite{tramer2018slalom}利用因特尔的可信执行环境，将神经网络的中敏感层的训练移入TEE中，利用定制化的硬件实现对用户数据的隐私保护，Mo等人\cite{mo2021ppfl}在此基础上，将全部层的神经网络计算移入TEE，并且提升了计算和通信效率。但是基于TEE的方案很难拓展到大规模的应用，因为安全硬件分配给TEE的内存都较小，使得TEE的大规模使用造价昂贵。同时相关研究\cite{van2018foreshadow}表明，基于TEE的隐私保护方案，会受到来自意见的测信道攻击（side channel attacks）。
+
+\subsection{基于混合密码技术的隐私保护联邦学习}
+由于密码技术有着各自的优点，为了结合各自的长处，一些基于混合密码技术的隐私保护FL方案\cite{choquette2021capc, hao2019efficient, hao2019towards, mugunthan2019smpai, truex2019hybrid, xu2019verifynet, xu2019hybridalpha, zhang2020privacy, zhao2020smss}被学者们提出。举例来说，
+文献\cite{xu2019verifynet, zhao2020smss}提出的隐私保护FL，基于同态加密和秘密共享的混合密码技术；
+工作\cite{hao2019efficient, hao2019towards}提出的隐私保护FL，基于同态加密和差分隐私的混合密码技术；
+研究\cite{mugunthan2019smpai, truex2019hybrid, xu2019hybridalpha}提出的隐私保护FL方案，基于安全多方计算和差分隐私。
+%TODO 综述59 了解一下
+
+\subsection{隐私保护联邦学习小结}
+以上提出的隐私保护联邦学习方案，仅限于解决FL中出现的隐私威胁，即用户数据或用户模型参数对半诚实服务器或者参与方泄露的威胁。所以其涉及的聚合方案都基于线性聚合方案FedAvg\cite{mcmahan2017communication}，而我们认为，隐私安全的联邦学习系统，还须考虑到以下两种典型的场景：
+\begin{compactitem}
+	\item \textbf{对拜占庭节点的鲁棒性：}拜占庭节点指的是FL中的恶意参与方，其可以通过上传精心构造或随机生成的恶意参数，急剧降低联合训练的全局模型准确率，研究\cite{blanchard2017machine}表明，一个拜占庭节点的存在，便可以破坏整个线性聚合（FedAvg）的FL方案。
+	\item \textbf{对异质数据的训练准确率：}异质数据是指FL中各个参与方之间数据分布不一致的场景，这种场景在真实的FL应用中十分常见\cite{li2020federated, gao2022feddc, ghosh2020efficient, briggs2020federated}，如果使用FedAvg聚合异质数据的产生的模型更新，将会生成准确率较低的全局模型。
+\end{compactitem}
+以 上两种场景，都对线性聚合方案FedAvg提出了挑战，对于拜占庭节点的威胁，我们需要识别恶意参数，并消除其对全局模型参数的影响；对于异质数据的场景，我们需要协调目标函数不同的参与方，识别具有相同训练目标的参与方；这都需要更加复制的聚合方案，也需要更加细致的安全协议设计，去平衡用户参数的隐私性和用户数据的可用性。
 
 \section{面向拜占庭容错的联邦学习综述}
 \label{sec:byzantine}
+%明文
+\subsection{基于明文更新的鲁棒聚合方案}
+
+%密文
+\subsection{基于密文更新的鲁棒聚合方案}
 
 \section{面向异质数据的联邦学习综述}
 \label{sec:noniid}
