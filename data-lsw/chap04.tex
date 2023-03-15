@@ -1,4 +1,5 @@
-\chapter{面向异质数据的隐私保护梯度聚合技术}
+%\chapter{面向异质数据的隐私保护梯度聚合技术}
+\chapter{面向异质数据分布的模型更新安全聚合技术}
 
 \section{引言}
 联邦学习\cite{mcmahan2017communication}（FL）是由Google在2017年提出的一种新颖的分布式机器学习框架，适用于注重数据隐私的参与方在服务器的调动下，协同完成神经网络的训练。
@@ -6,7 +7,7 @@
 简单来说，FL的核心步骤，是在FL服务提供商的协调下，不同的参与方上传本地训练得到的本地更新（即梯度），然后由服务提供商聚合梯度生成全局模型，最后分发给参与方。在整个过程中，用户的数据始终保持在本地，对比传统的分布式机器学习直接交易数据的方式，提升了数据的隐私性。
 
 然而，一些研究 \cite{geiping2020inverting,zhu2019deep,gao2021privacy} 表明，尽管没有直接上传数据，但是FL仍然存在隐私泄露的风险，服务提供商可以通过用户上传的梯度推断出用户的原始数据集，这违背了一些数据保护法，比如GDPR \cite{voigt2017eu}。
-同时也有研究 \cite{zhao2018federated, tuor2021overcoming, yoshida2019hybrid}表明，异质数据（即用户间数据分布不一致，non-independent identical distribution data, Non-IID）给FL的联合训练准确率带来了较大的挑战。
+同时也有研究 \cite{zhao2018federated, tuor2021overcoming, yoshida2019hybrid}表明，异质数据分布（即用户间数据分布不一致，non-independent identical distribution data, Non-IID）给FL的联合训练准确率带来了较大的挑战。
 具体来说，真实场景下的FL，往往会遇到参与方数据分布不一致的情况，这会导致参与方的局部目标函数和全局的目标函数之间出现偏差，从而大大影响经典FL训练得到的全局模型的性能。
 
 %TODO 加一个 权重偏差的图
