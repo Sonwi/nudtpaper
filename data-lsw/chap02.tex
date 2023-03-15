@@ -1,5 +1,8 @@
 \chapter{相关研究综述}
 \label{chap:main}
+当前相关研究人员针对FL中的安全隐私威胁，以及异质数据带来的挑战等热点问题，已经取得了一系列的研究成果。
+本章主要梳理和总结了国内外针对隐私保护联邦学习、拜占庭鲁棒联邦学习以及异质数据联邦学习的相关研究成果，
+并深入分析了其在隐私性、鲁棒性和执行效率之间的权衡，为本文后续的研究做铺垫。
 
 \section{隐私保护联邦学习综述}
 \label{sec:ppfl}
@@ -48,7 +51,9 @@ Tramer和Boneh\cite{tramer2018slalom}利用因特尔的可信执行环境，将�
 以上提出的隐私保护联邦学习方案，仅限于解决FL中出现的隐私威胁，即用户数据或用户模型参数对半诚实服务器或者参与方泄露的威胁。所以其涉及的聚合方案都基于平均线性聚合方案FedAvg\cite{mcmahan2017communication}，而我们认为，隐私安全的联邦学习系统，还须考虑到以下两种典型的场景：
 \begin{compactitem}
 	\item \textbf{对拜占庭节点的鲁棒性：}拜占庭节点指的是FL中的恶意参与方，其可以通过上传精心构造或随机生成的恶意参数，急剧降低联合训练的全局模型准确率，研究\cite{blanchard2017machine}表明，一个拜占庭节点的存在，便可以破坏整个平均线性聚合（FedAvg）的FL方案。
-	\item \textbf{对异质数据的训练准确率：}异质数据是指FL中各个参与方之间数据分布不一致的场景，这种场景在真实的FL应用中十分常见\cite{li2020federated, gao2022feddc, ghosh2020efficient, briggs2020federated}，如果使用FedAvg聚合异质数据产生的模型更新，将会生成准确率较低的全局模型。
+	\item \textbf{对异质数据的训练准确率：}异质数据是指FL中各个参与方之间数据分布不一致的场景，这种场景在真实的FL应用中十分常见\cite{li2020federated, gao2022feddc, ghosh2020efficient, briggs2020federated}，
+	异质数据产生的用户梯度之间存在分歧（divergence），以平均线性聚合FedAvg产生的全局模型，不能同时满足所有参与方对于推理准确率的需求。
+%	如果使用FedAvg聚合异质数据产生的模型更新，将会生成准确率较低的全局模型。
 \end{compactitem}
 以 上两种场景，都对线性聚合方案FedAvg提出了挑战，对于拜占庭节点的威胁，我们需要识别恶意参数，并消除其对全局模型参数的影响；对于异质数据的场景，我们需要协调目标函数不同的参与方，识别具有相同训练目标的参与方；这都需要更加复杂的聚合方案，也需要更加细致的安全协议设计，去平衡用户参数的隐私性和用户数据的可用性。
 
@@ -84,7 +89,7 @@ Nguyen等人\cite{nguyen2022flame}针对后门攻击（Backdoor attack）精心�
 
 \section{面向异质数据的联邦学习综述}
 \label{sec:noniid}
-联邦学习中的异质数据，即参与方之间的数据分布是非独立同分布（Non-independent and identically distributed，Non-IID）性质，会造成不同用户本地训练产生的参数更新之间发生背离（divergence），尤其是对复制的神经网络训练任务。
+联邦学习中的异质数据，即参与方之间的数据分布是非独立同分布（Non-independent and identically distributed，Non-IID）性质，会造成不同用户本地训练产生的参数更新之间发生分歧（divergence），尤其是对复制的神经网络训练任务。
 当前处理FL中的异质数据主流方法分为三类，第一种基于本地数据的调整；第二种基于训练算法的优化；第三种基于系统结构的优化，下面对相关文献进行细节描述。
 
 \subsection{基于数据的异质聚合方案}
