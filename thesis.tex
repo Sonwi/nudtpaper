@@ -59,20 +59,24 @@
 % \addbibresource[location=local]{ref/refs-lsw.bib}
 \usepackage{mynudt}
 
-\classification{TP957}
-\serialno{0123456}
+\classification{TP391}
+\serialno{20023006}
 \confidentiality{公开}
-\UDC{}
-\title{面向复杂场景的联邦学习模型更新安全聚合研究}
-\displaytitle{面向复杂场景的联邦学习模型更新安全聚合研究}
+\UDC{004}
+%\title{面向复杂场景的联邦学习\\安全聚合研究}
+%\title{面向复杂场景的隐私保护联邦学习方案研究}
+\title{联邦学习模型参数的安全聚合技术研究}
+\displaytitle{联邦学习模型参数的安全聚合技术研究}
 \author{罗淞巍}
 \zhdate{\zhtoday}
-\entitle{Research on Secure Aggregation of Model Updates for Federated Learning in Complex Scenarios}
+%\entitle{Research on Secure Aggregation of Model Updates for Federated Learning in Complex Scenarios}
+%\entitle{Research on Privacy-preserving Federated Learning Scheme for Complex Scenarios}
+\entitle{Research on Secure Aggregation Techniques for Federated Learning Model Parameters}
 \enauthor{Luo Songwei}
 \endate{\entoday}
-\subject{计算机技术}
+\subject{电子信息}
 \ensubject{Computer Technology}
-\researchfield{隐私保护联邦学习}
+\researchfield{计算机技术}
 \supervisor{付绍静\quad{}教授}
 \cosupervisor{} % 没有就空着
 \ensupervisor{Prof. Fu Shaojing}
@@ -82,7 +86,7 @@
 % 加入makenomenclature命令可用nomencl制作符号列表。
 
 \begin{document}
-\graphicspath{{figures/}}
+\graphicspath{{figures/}{figures/keynote-figs/}}
 % 制作封面，生成目录，插入摘要，插入符号列表 \\
 % 默认符号列表使用denotation.tex，如果要使用nomencl \\
 % 需要注释掉denotation，并取消下面两个命令的注释。 \\
@@ -95,11 +99,11 @@
 \listoffigures
 
 %如果不是送审论文，则将true改为false即可
-\newif\ifreview\reviewfalse
+\newif\ifreview\reviewtrue
 
 \midmatter
 \input{data-lsw/abstract}
-\input{data-lsw/denotation}
+%\input{data-lsw/denotation}
 
 %书写正文，可以根据需要增添章节; 正文还包括致谢，参考文献与成果
 \mainmatter
@@ -132,6 +136,6 @@
 % 最后，需要的话还要生成附录，全文随之结束。
 \appendix
 \backmatter
-\input{data-lsw/appendix01}
+%\input{data-lsw/appendix01}
 
 \end{document}

@@ -1,13 +1,13 @@
 \chapter{相关研究综述}
 \label{chap:main}
-当前相关研究人员针对FL中的安全隐私威胁，以及异质数据带来的挑战等热点问题，已经取得了一系列的研究成果。
-本章主要梳理和总结了国内外针对隐私保护联邦学习、拜占庭鲁棒联邦学习以及异质数据联邦学习的相关研究成果，
+当前相关研究人员针对联邦学习中的安全隐私威胁，以及异质分布数据带来的挑战等热点问题，已经取得了一系列的研究成果。
+本章主要梳理和总结了国内外针对隐私保护联邦学习、拜占庭鲁棒联邦学习以及异质分布数据联邦学习的相关研究成果，
 并深入分析了其在隐私性、鲁棒性和执行效率之间的权衡，为本文后续的研究做铺垫。
 
 \section{隐私保护联邦学习综述}
 \label{sec:ppfl}
 %TODO 加个全局的思维导图
-为了解决联邦学习（Federated Learning，FL）中用户直接上传参数造成的数据隐私泄露问题，学者们提出了一系列方案，利用隐私保护技术，在确保正确聚合的前提下，提升FL的安全性。
+为了解决联邦学习（Federated Learning，FL）中用户直接上传参数造成的数据隐私泄露问题，学者们提出了一系列方案，利用隐私保护技术，在确保正确聚合的前提下，提升联邦学习的安全性。
 这些方案使用到的隐私保护技术主要分为四类，分别是：差分隐私（Differential Privacy，DP）\cite{dwork2006differential}、同态加密（Homomorphic Encryption，HE）\cite{gentry2013homomorphic}、安全多方计算（Secure Multi-Party Computation，MPC）\cite{shamir1979share}以及可信执行环境（Trusted Execution Environment，TEE）\cite{sabt2015trusted}。
 
 \subsection{基于DP的隐私保护联邦学习}
@@ -19,45 +19,45 @@ Shokri等人\cite{shokri2015privacy}首先考虑到深度学习中的数据隐�
 然而，Jayaraman等人\cite{jayaraman2019evaluating}在深度学习网络训练的中，对模型准确率和隐私预算进行了细致的量化分析，发现基于DP的隐私保护深度学习方案，基本不能提供有效的准确率和隐私之间的权衡。
 
 \subsection{基于MPC的隐私保护联邦学习}
-安全多方计算（MPC）技术可以在保证数据隐私的前提下，协调多个参与方安全计算出函数输出，可以用于FL中用户数据或参数的隐私。学者们也提出了很多基于MPC的隐私保护FL方案\cite{bonawitz2017practical, mohassel2017secureml, mugunthan2019smpai, reich2019privacy, sharma2019secure, so2020scalable, xu2019hybridalpha, zhu2020privacy}。举例来说，
+安全多方计算（MPC）技术可以在保证数据隐私的前提下，协调多个参与方安全计算出函数输出，可以用于联邦学习中用户数据或参数的隐私。学者们也提出了很多基于MPC的隐私保护联邦学习方案\cite{bonawitz2017practical, mohassel2017secureml, mugunthan2019smpai, reich2019privacy, sharma2019secure, so2020scalable, xu2019hybridalpha, zhu2020privacy}。举例来说，
 Bonawitz等人\cite{bonawitz2017practical}首先提出了一种双掩码方案，来保护用户上传的参数隐私，其中一个掩码用于保护单个用户参数的隐私（相加聚合之后会抵消），另一个掩码用于保证掉线用户的参数隐私。对于任何一个用户参数，只有一个掩码会被去掉，所以可以保证用户的参数隐私。这种方案显著增加了用户侧的通信轮次。
 Mohasse等人\cite{mohassel2017secureml}以及Bell等人\cite{bell2020secure}利用安全多方计算技术（MPC），将数据以秘密共享的方式，外包给双云服务器，通过设计的安全高效的安全两方结算协议（2PC），实现对加密数据的联合训练，但是这种类型的方案需要用户一直保持在线，给整个系统在真实世界中的部署带来了额外的瓶颈。
-Xu等人\cite{xu2019hybridalpha}利用秘密共享\cite{shamir1979share}和密钥协商技术\cite{hellman1976new}，搭建了支持验证服务器聚合运算的隐私保护FL方案。
-对于基于MPC的方案来说，需要客服的困难是给FL参与方带来的计算和通信开销的增加。
+Xu等人\cite{xu2019hybridalpha}利用秘密共享\cite{shamir1979share}和密钥协商技术\cite{hellman1976new}，搭建了支持验证服务器聚合运算的隐私保护联邦学习方案。
+对于基于MPC的方案来说，需要克服的困难是给联邦学习参与方带来的计算和通信开销的增加。
 
 
 \subsection{基于HE的隐私保护联邦学习}
-同态加密（HE）可以让服务器在密文上直接计算用户参数的聚合结果，保证其解密结果和明文计算一致，这个特性用在FL中可以保护用户上传的参数隐私，而又不影响参数的聚合。所以很多基于HE的FL方案\cite{asad2020fedopt, chen2020fedhealth, dong2020eastfly, hao2019efficient, hardy2017private, aono2017privacy, zhang2020batchcrypt, zhang2020privacy, zhao2020smss}被学者们提了出来。举例来说，
+同态加密（HE）可以让服务器在密文上直接计算用户参数的聚合结果，保证其解密结果和明文计算一致，这个特性用在联邦学习中可以保护用户上传的参数隐私，而又不影响参数的聚合。所以很多基于HE的联邦学习方案\cite{asad2020fedopt, chen2020fedhealth, dong2020eastfly, hao2019efficient, hardy2017private, aono2017privacy, zhang2020batchcrypt, zhang2020privacy, zhao2020smss}被学者们提了出来。举例来说，
 Aono等人\cite{aono2017privacy}利用加性同态加密（Additively Homomorphic Encrytion，AHE）加密用户上传的参数，服务器利用HE在密文上实现聚合，通过让私钥在参与方之间公开而对服务器保密的方式，实现对用户参数的隐私保护。
 Chen等人\cite{chen2020fedhealth}基于AHE提出了针对可穿戴设备的安全联邦学习框架，移动的可穿戴设备通过HE加密本地模型参数然后上传给服务器完成聚合，最后将聚合密文再分发给可穿戴设备。
 Hao等人基于全同态加密（Fully Homomorphic Encryption，FHE）\cite{brakerski2014leveled}提出了隐私保护联邦学习方案。
 为了优化同态加密的计算和通信开销，Zhang等人\cite{zhang2020batchcrypt}对用户梯度进行了批量编码，即将多个梯度值编码为一个长整数，再加密为密文上传到聚合服务器。
 Zhang等人\cite{zhang2020privacy}使用HE加密本地梯度，同时利用分布式选择随机梯度下降算法减小计算开销。
-Ma等人\cite{ma2021privacy}使用HE中CKKS多密钥变种MK-CKKS对参与方持有相同私钥的方式进行了优化，同时修订了多密钥密文线性聚合时的隐私泄露问题，进一步提升了FL的隐私性。
+Ma等人\cite{ma2021privacy}使用HE中CKKS多密钥变种MK-CKKS对参与方持有相同私钥的方式进行了优化，同时修订了多密钥密文线性聚合时的隐私泄露问题，进一步提升了联邦学习的隐私性。
 
 
 \subsection{基于TEE的隐私保护联邦学习}
-可信执行环境（Trusted execution environment，TEE）基于硬件安全的CPU，实现了基于内存隔离的安全计算方式，FL可以将涉及隐私的计算放入TEE，实现对用户数据的隐私保护。学者们提出了一些基于TEE的隐私保护FL方案\cite{tramer2018slalom, mo2019efficient, mo2021ppfl, mo2020darknetz}。举例来说，
-Tramer和Boneh\cite{tramer2018slalom}利用因特尔的可信执行环境，将神经网络的中敏感层的训练移入TEE中，利用定制化的硬件实现对用户数据的隐私保护，Mo等人\cite{mo2021ppfl}在此基础上，将全部层的神经网络计算移入TEE，并且提升了计算和通信效率。但是基于TEE的方案很难拓展到大规模的应用，因为安全硬件分配给TEE的内存都较小，使得TEE的大规模使用造价昂贵。同时相关研究\cite{van2018foreshadow}表明，基于TEE的隐私保护方案，会受到来自意见的测信道攻击（side channel attacks）。
+可信执行环境（Trusted execution environment，TEE）基于硬件安全的CPU，实现了基于内存隔离的安全计算方式，联邦学习可以将涉及隐私的计算放入TEE，实现对用户数据的隐私保护。学者们提出了一些基于TEE的隐私保护联邦学习方案\cite{tramer2018slalom, mo2019efficient, mo2021ppfl, mo2020darknetz}。举例来说，
+Tramer和Boneh\cite{tramer2018slalom}利用因特尔的可信执行环境，将神经网络的中敏感层的训练移入TEE中，利用定制化的硬件实现对用户数据的隐私保护，Mo等人\cite{mo2021ppfl}在此基础上，将全部层的神经网络计算移入TEE，并且提升了计算和通信效率。但是基于TEE的方案很难扩展到大规模的应用，因为安全硬件分配给TEE的内存都较小，使得TEE的大规模使用造价昂贵。同时相关研究\cite{van2018foreshadow}表明，基于TEE的隐私保护方案，会受到来自意见的测信道攻击（side channel attacks）。
 
 \subsection{基于混合密码技术的隐私保护联邦学习}
-由于密码技术有着各自的优点，为了结合各自的长处，一些基于混合密码技术的隐私保护FL方案\cite{choquette2021capc, hao2019efficient, hao2019towards, mugunthan2019smpai, truex2019hybrid, xu2019verifynet, xu2019hybridalpha, zhang2020privacy, zhao2020smss}被学者们提出。举例来说，
-文献\cite{xu2019verifynet, zhao2020smss}提出的隐私保护FL，基于同态加密和秘密共享的混合密码技术；
-工作\cite{hao2019efficient, hao2019towards}提出的隐私保护FL，基于同态加密和差分隐私的混合密码技术；
-研究\cite{mugunthan2019smpai, truex2019hybrid, xu2019hybridalpha}提出的隐私保护FL方案，基于安全多方计算和差分隐私。
+由于密码技术有着各自的优点，为了结合各自的长处，一些基于混合密码技术的隐私保护联邦学习方案\cite{choquette2021capc, hao2019efficient, hao2019towards, mugunthan2019smpai, truex2019hybrid, xu2019verifynet, xu2019hybridalpha, zhang2020privacy, zhao2020smss}被学者们提出。举例来说，
+文献\cite{xu2019verifynet, zhao2020smss}提出的隐私保护联邦学习，基于同态加密和秘密共享的混合密码技术；
+工作\cite{hao2019efficient, hao2019towards}提出的隐私保护联邦学习，基于同态加密和差分隐私的混合密码技术；
+研究\cite{mugunthan2019smpai, truex2019hybrid, xu2019hybridalpha}提出的隐私保护联邦学习方案，基于安全多方计算和差分隐私。
 %TODO 综述59 了解一下
 
 \subsection{隐私保护联邦学习小结}
-以上提出的隐私保护联邦学习方案，仅限于解决FL中出现的隐私威胁，即用户数据或用户模型参数对半诚实服务器或者参与方泄露的威胁。所以其涉及的聚合方案都基于平均线性聚合方案FedAvg\cite{mcmahan2017communication}，而我们认为，隐私安全的联邦学习系统，还须考虑到以下两种典型的场景：
+以上提出的隐私保护联邦学习方案，仅限于解决联邦学习中出现的隐私威胁，即用户数据或用户模型参数对半诚实服务器或者参与方泄露的威胁。所以其涉及的聚合方案都基于平均线性聚合方案FedAvg\cite{mcmahan2017communication}，而本文认为，隐私安全的联邦学习系统，还须考虑到以下两种典型的场景：
 \begin{compactitem}
-	\item \textbf{对拜占庭节点的鲁棒性：}拜占庭节点指的是FL中的恶意参与方，其可以通过上传精心构造或随机生成的恶意参数，急剧降低联合训练的全局模型准确率，研究\cite{blanchard2017machine}表明，一个拜占庭节点的存在，便可以破坏整个平均线性聚合（FedAvg）的FL方案。
-	\item \textbf{对异质数据的训练准确率：}异质数据是指FL中各个参与方之间数据分布不一致的场景，这种场景在真实的FL应用中十分常见\cite{li2020federated, gao2022feddc, ghosh2020efficient, briggs2020federated}，
-	异质数据产生的用户梯度之间存在分歧（divergence），以平均线性聚合FedAvg产生的全局模型，不能同时满足所有参与方对于推理准确率的需求。
+	\item \textbf{拜占庭节点的干扰：}拜占庭节点指的是联邦学习中的恶意参与方，其可以通过上传精心构造或随机生成的恶意参数，急剧降低联合训练的全局模型准确率，研究\cite{blanchard2017machine}表明，一个拜占庭节点的存在，便可以破坏整个平均线性聚合（FedAvg）的联邦学习方案。
+	\item \textbf{异质分布数据的影响：}异质分布数据是指联邦学习中各个参与方之间数据分布不一致的场景，这种场景在真实的联邦学习应用中十分常见\cite{li2020federated, gao2022feddc, ghosh2020efficient, briggs2020federated}，
+	异质分布数据产生的用户梯度之间存在分歧（divergence），以平均线性聚合FedAvg产生的全局模型，不能同时满足所有参与方对于推理准确率的需求。
 %	如果使用FedAvg聚合异质数据产生的模型更新，将会生成准确率较低的全局模型。
 \end{compactitem}
-以 上两种场景，都对线性聚合方案FedAvg提出了挑战，对于拜占庭节点的威胁，我们需要识别恶意参数，并消除其对全局模型参数的影响；对于异质数据的场景，我们需要协调目标函数不同的参与方，识别具有相同训练目标的参与方；这都需要更加复杂的聚合方案，也需要更加细致的安全协议设计，去平衡用户参数的隐私性和用户数据的可用性。
+以上两种场景，都对线性聚合方案FedAvg提出了挑战，对于拜占庭节点的威胁，联邦学习需要识别恶意参数，并消除其对全局模型参数的影响；对于异质分布数据的场景，联邦学习需要协调目标函数不同的参与方，识别具有相同训练目标的参与方；这都需要更加复杂的聚合方案，也需要更加细致的安全协议设计，去平衡用户参数的隐私性和用户数据的可用性。
 
-\section{面向拜占庭容错的联邦学习综述}
+\section{拜占庭鲁棒联邦学习综述}
 \label{sec:byzantine}
 联邦学习中拜占庭节点的出现，使得学者们去寻求比FedAvg更加鲁棒的用户参数聚合方案\cite{blanchard2017machine, guerraoui2018hidden, yin2018byzantine, DBLP:conf/ndss/CaoF0G21, he2020secure, hashemi2021byzantine, khazbak2020mlguard, liu2021privacy, nguyen2022flame, hao2021efficient, dong2021flod}。在这些方案中，可以根据是否考虑对用户上传参数的隐私保护，划分为直接使用明文用户更新的拜占庭鲁棒聚合方案\cite{blanchard2017machine, guerraoui2018hidden, yin2018byzantine, DBLP:conf/ndss/CaoF0G21}，和使用加密或者混淆之后的用户更新的拜占庭鲁棒聚合方案\cite{he2020secure, hashemi2021byzantine, khazbak2020mlguard, liu2021privacy, nguyen2022flame, hao2021efficient, dong2021flod}。考虑用户更新的隐私，也就意味着需要进一步在用户隐私和用户更新可用性之间做权衡。
 
@@ -65,7 +65,7 @@ Tramer和Boneh\cite{tramer2018slalom}利用因特尔的可信执行环境，将�
 \subsection{基于梯度明文的鲁棒聚合方案}
 %TODO 加一个对与参数 梯度的解释
 在McMahan等人\cite{mcmahan2017communication}提出开创性的基于FedAvg的联邦学习方案之后，
-Blanchard等人\cite{blanchard2017machine}揭示了拜占庭节点对FedAvg的威胁，并提出了Krum聚合方案来提升FL面对拜占庭节点的鲁棒性，其核心思想是通过计算两两用户之间的欧式距离，选择出距离其它所有用户梯度距离和最小的用户梯度，作为本轮聚合的全局梯度。
+Blanchard等人\cite{blanchard2017machine}揭示了拜占庭节点对FedAvg的威胁，并提出了Krum聚合方案来提升联邦学习面对拜占庭节点的鲁棒性，其核心思想是通过计算两两用户之间的欧式距离，选择出距离其它所有用户梯度距离和最小的用户梯度，作为本轮聚合的全局梯度。
 为了让更多的本地梯度为全局梯度做贡献，Guerraoui等人 \cite{guerraoui2018hidden}提出了Bulyan梯度聚合方案，其借鉴了Krum的距离计算方式，然后按照Krum的标准选出了多份梯度，再逐维度取中值作为基准，按照到基准的距离分配权重，聚合选中的梯度产生全局梯度。
 这两种计算方案都依赖与所有参与方两两之间的距离计算，对于$N$个参与方来说，其计算复杂度为$O(N^2)$，对于维度较大的梯度来说，计算开销较大。
 除此之外，Yin等人\cite{yin2018byzantine}提出了两种逐维度聚合方案，Median 和Trimmed Mean，其聚合方式是对于梯度的第$i$个维度，聚合服务器将所有参与方的这个维度排序，从中取出位于中部的中值（Median）或裁剪掉固定占比的头部尾部数值之后的平均值（Trimmed Mean），作为这个维度的聚合值。
@@ -85,61 +85,62 @@ Nguyen等人\cite{nguyen2022flame}针对后门攻击（Backdoor attack）精心�
 
 \subsection{拜占庭鲁棒联邦学习小结}
 对于基于梯度明文的方案来说，其最大的安全威胁来自于半诚实服务器对用户隐私数据的推理\cite{geiping2020inverting}。所以需要使用密码技术或扰动技术，对梯度进行加密或扰动。
-在加密或扰动之后，要面对的问题是隐私性、鲁棒性和计算效率三者之间的权衡，其本质原因考虑鲁棒聚合方案时，没有很好的兼顾隐私性带来的计算限制。我们选择换个出发点，充分考虑隐私带来的计算限制，再设计密文计算友好的聚合方案，在平衡隐私、鲁棒和效率上更进一步。
+在加密或扰动之后，要面对的问题是隐私性、鲁棒性和计算效率三者之间的权衡，其本质原因考虑鲁棒聚合方案时，没有很好的兼顾隐私性带来的计算限制。本文选择换个出发点，充分考虑隐私带来的计算限制，再设计密文计算友好的聚合方案，在平衡隐私、鲁棒和效率上更进一步。
 
-\section{面向异质数据的联邦学习综述}
+\section{异质分布数据联邦学习综述}
 \label{sec:noniid}
-联邦学习中的异质数据，即参与方之间的数据分布是非独立同分布（Non-independent and identically distributed，Non-IID）性质，会造成不同用户本地训练产生的参数更新之间发生分歧（divergence），尤其是对复制的神经网络训练任务。
-当前处理FL中的异质数据主流方法分为三类，第一种基于本地数据的调整；第二种基于训练算法的优化；第三种基于系统结构的优化，下面对相关文献进行细节描述。
+联邦学习中的异质分布数据，即参与方之间数据分布的非独立同分布（Non-independent and identically distributed，Non-IID）性质，会造成不同用户本地训练产生的参数更新之间发生分歧（divergence），尤其是对复杂的神经网络训练任务。
+当前处理联邦学习中的异质分布数据主流方法分为三类，第一种基于本地数据的调整；第二种基于训练算法的优化；第三种基于系统结构的优化，下面对相关文献进行细节描述。
 
 \subsection{基于数据的异质聚合方案}
-由异质数据引起的性能下降问题，一种很直观的解决方案就是修改参与方的数据分布，其中数据共享（Data sharing）和数据增强（Data augmentation）\cite{tanner1987calculation}是最主要的两个策略。
+由异质分布数据引起的性能下降问题，一种很直观的解决方案就是修改参与方的数据分布，其中数据共享（Data sharing）和数据增强（Data augmentation）\cite{tanner1987calculation}是最主要的两个策略。
 
 首先介绍基于数据共享的方案\cite{zhao2018federated, yoshida2020hybrid, tuor2021overcoming}。
 文献\cite{zhao2018federated}中，聚合服务器持有一份独立同分布（IID）的训练集$G$，并使用该训练集训练全局模型，同时共享部分全局数据给参与方，与本地数据集一起参与本地训练，以小部分数据集的共享换取全局准确率的提升。
-基于数据共享的方案有很明显的缺点，首先收集数据的行为显然违背了隐私保护合规法律，其次对于收集数据的要求是独立同分布，很难应用于实际的FL场景。
-其次介绍基于数据增强的方案\cite{duan2019astraea, shin2020xor, yoonfedmix}，数据增强\cite{tanner1987calculation}最初是一种通过一些随机变换或知识迁移来增加训练数据多样性的技术，也可用于缓解FL中的本地数据的异质问题。
+基于数据共享的方案有很明显的缺点，首先收集数据的行为显然违背了隐私保护合规法律，其次对于收集数据的要求是独立同分布，很难应用于实际的联邦学习场景。
+其次介绍基于数据增强的方案\cite{duan2019astraea, shin2020xor, yoonfedmix}，数据增强\cite{tanner1987calculation}最初是一种通过一些随机变换或知识迁移来增加训练数据多样性的技术，也可用于缓解联邦学习中的本地数据的异质问题。
 研究\cite{duan2019astraea}通过收集不同参与方的数据标签分布信息，然后定制化的给出数据增强策略，由此生成的数据和用户本地的数据一起参与训练。
 Yoon等人\cite{yoonfedmix}通过对每个参与方收集一部分数据，合并返还给所有参与方，以此减少本地数据的不平衡程度。
 
 总结来看，数据共享和数据增强策略，确实能够缓解参与方之间的数据分布不一致问题，但是这些策略都会直接侵犯用户的数据隐私，存在较大的安全威胁。
 
 \subsection{基于算法的异质聚合方案}
-解决异质数据问题的另一种思路是定制化的算法调整，主要的方法有以下三类：本地训练微调（Local fine-tuning）\cite{hanzely2020federated, t2020personalized, huang2021personalized}、本地个性化层（Personalization layer）以及多任务学习（Multi-task learning）
+解决异质分布数据问题的另一种思路是定制化的算法调整，主要的方法有以下三类：本地训练微调（Local fine-tuning）\cite{hanzely2020federated, t2020personalized, huang2021personalized}、本地个性化层（Personalization layer）以及多任务学习（Multi-task learning）
 %以及知识蒸馏（Knowledge distillation）。
 
-首先介绍基于本地微调的方案，文献\cite{li2020federated, hanzely2020federated, t2020personalized, huang2021personalized}都是通过在本地训练的优化目标中添加正则项，用以限制用户参数的更新幅度，减小不同参与方之间的本地权重差距，提升联合训练的全局模型性能。本类型的方案本质上还是追求训练统一的全局模型，在面对比较极端的异质数据分布时，很难让所有的参与方同时保持较高的推理准确率。
+首先介绍基于本地微调的方案，文献\cite{li2020federated, hanzely2020federated, t2020personalized, huang2021personalized}都是通过在本地训练的优化目标中添加正则项，用以限制用户参数的更新幅度，减小不同参与方之间的本地权重差距，提升联合训练的全局模型性能。本类型的方案本质上还是追求训练统一的全局模型，在面对比较极端的异质分布数据时，很难让所有的参与方同时保持较高的推理准确率。
 
 基于个性化层的方案，将参与方本地的训练模型划分为共享的基础层和独占的个性化层，在参数聚合时只聚合共享层。
 文献\cite{arivazhagan2019federated}提出了典型的个性化联邦学习方案FedPer，其将神经网络中的浅层设置为共享层，用于提出公共的特征，将深层作为独占层便于生成个性化的分类结果，其共享层的操作与FedAvg一致。
-与此相反，文献\cite{liang2020think}提出了个性化FL
+与此相反，文献\cite{liang2020think}提出了个性化联邦学习
 方案 LG-FEDAVG，其将浅层作为独占层，深层作为独占层，在研究中兼顾了有监督学习、无监督学习以及自监督学习。
-基于个性化层的方案，不仅可以提升面对异质数据时的推理准确率，还能减小参与方和聚合服务器之间的通信开销。
+基于个性化层的方案，不仅可以提升面对异质分布数据时的推理准确率，还能减小参与方和聚合服务器之间的通信开销。
 
-解决FL异质数据问题的另一种方法是将其作为一个多任务学习问题。例如，MOCHA\cite{smith2017federated}是联合多任务学习（FMTL）的代表性框架，首先考虑了FL的通信成本和容错问题。MOCHA为每个客户端生成了分离但相关的模型，这使得它不适合于非凸优化任务。Corinzia等人\cite{corinzia2019variational}提出了一个使用贝叶斯网络和近似变量推理的FMTL框架VIRTUAL，可以处理非凸模型。他们的方法在几个Non-IID数据集上取得了令人满意的结果，但由于顺序微调，在有大量客户时，很难收敛。
+解决联邦学习异质分布数据问题的另一种方法是将其作为一个多任务学习问题。例如，MOCHA\cite{smith2017federated}是联合多任务学习（FMTL）的代表性框架，首先考虑了联邦学习的通信成本和容错问题。MOCHA为每个客户端生成了分离但相关的模型，这使得它不适合于非凸优化任务。Corinzia等人\cite{corinzia2019variational}提出了一个使用贝叶斯网络和近似变量推理的FMTL框架VIRTUAL，可以处理非凸模型。他们的方法在几个Non-IID数据集上取得了令人满意的结果，但由于顺序微调，在有大量客户时，很难收敛。
 
 %TODO 知识蒸馏
 %知识蒸馏\cite{buciluǎ2006model}是一种从大的教师模型学习小的学生模型的方法，将其应用到FL的主要动机是可以迁移服务器或者其它参与方的模型知识，到特定的用户模型，以此提高异质数据之间的联合训练准确率，
 
-总结来看，基于算法的调整主要集中在用户侧，添加了更多属于用户的个性化操作，来面对异质数据导致的准确率下降问题。
+总结来看，基于算法的调整主要集中在用户侧，添加了更多属于用户的个性化操作，来面对异质分布数据导致的准确率下降问题。
 
 \subsection{基于聚类的异质聚合方案}
-在面对参与方的异质数据环境时，基于聚类的方案不局限于生成一份全局模型，其认为一个模型很难学习到所有参与方的数据特征。因此，使用聚类算法将参与方划分到不同的簇，每个簇生成属于本簇的全局模型。
+在面对参与方的异质分布数据环境时，基于聚类的方案不局限于生成一份全局模型，其认为一个模型很难学习到所有参与方的数据特征。因此，使用聚类算法将参与方划分到不同的簇，每个簇生成属于本簇的全局模型。
 文献\cite{ghosh2022efficient}使用不同参与方的loss值来确定划分的簇，具体来说，聚合服务器维护多个全局模型，在每轮将所有的全局模型分发给参与方，然后参与方尝试所有的全局模型利用本地数据计算loss值，选择loss最低的那个全局模型作为其所属的簇模型，显然这种方式显著增加了通信量和计算量。
 Kopparapu等人\cite{kopparapu2020fedfmc}优化了上述算法，仅在特定的轮次进行类别的划分。
 除此之外，还有一类基于用户本地更新相似度来聚类划分的方案\cite{briggs2020federated, sattler2020clustered, dempster1977maximum}。
 文献\cite{briggs2020federated}在特定的训练轮次，对所有的参与方上传的梯度进行一次层次聚类，然后后续轮次根据聚类结果，针对每个簇利用FedAvg生成一份全局模型参数。
 
-总结来看，基于聚类的方案不局限于单个全局模型，其对异质数据的处理能力比前面提到的单个模型强，且可以和前面的方案结合使用。
+总结来看，基于聚类的方案不局限于单个全局模型，其对异质分布数据的处理能力比前面提到的单个模型强，且可以和前面的方案结合使用。
 
-\subsection{异质数据联邦学习小结}
-上述提到的针对异质数据的联邦学习方案，都在努力提升Non-IID数据联合训练的准确率，忽略了对梯度的隐私保护问题。
-如果要考虑用户参数的隐私性，一些在用户侧的改进可以被第\ref{sec:ppfl}节提到的隐私保护FL所兼容，但是在服务侧做出的类似聚类的操作，就需要定制安全计算协议来实现隐私用户梯度隐私的同时，提升面对异质数据的训练准确率。
+\subsection{异质分布数据联邦学习小结}
+上述提到的针对异质分布数据的联邦学习方案，都在努力提升Non-IID数据联合训练的准确率，忽略了对梯度的隐私保护问题。
+如果要考虑用户参数的隐私性，一些在用户侧的改进可以被第\ref{sec:ppfl}节提到的隐私保护联邦学习所兼容，但是在服务侧做出的类似聚类的操作，就需要定制安全计算协议来实现隐私用户梯度隐私的同时，提升面对异质分布数据的训练准确率。
 %因此我们实现了一个兼容Non-IID场景的隐私保护联邦学习训练框架，
 
 \section{本章小结}
-本章主要针对隐私保护联邦学习、面向拜占庭容错的联邦学习以及面向异质数据的联邦学习相关研究成果展开了综述。
+本章主要针对隐私保护联邦学习、面向拜占庭容错的联邦学习以及面向异质分布数据的联邦学习相关研究成果展开了综述。
 通过梳理代表性的研究成果，本章总结了相关领域所面临的问题和挑战。
-总体来说，当前联邦学习中的FedAvg算法面临着拜占庭节点和异质数据的挑战，迫切需要更加鲁棒的聚合方案来提升鲁棒性，
+总体来说，当前联邦学习中的FedAvg算法面临着拜占庭节点和异质分布数据的挑战，迫切需要更加鲁棒的聚合方案来提升鲁棒性，
 同时用户梯度的隐私问题又限制着这些方案的设计和实现，需要权衡隐私性、安全性和鲁棒性。
-本文将围绕拜占庭鲁棒隐私保护联邦学习，以及异质数据隐私保护联邦学习关键技术进行研究。
+本文将围绕拜占庭鲁棒隐私保护联邦学习，以及异质分布数据隐私保护联邦学习关键技术进行研究。
+\settocdepth{subsection} 

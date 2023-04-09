@@ -1,21 +1,36 @@
 \begin{cabstract}
-国防科学技术大学是一所直属中央军委的综合性大学。1984年,学校经国务院、中央军委和教育部批准首批成立研究生院，%
-肩负着为全军培养高级科学和工程技术人才与指挥人才，培训高级领导干部，从事先进武器装备和国防关键技术研究的重要任务。%
-国防科技大学是全国重点大学，也是全国首批进入国家“211工程” 建设并获中央专项经费支持的全国重点院校之一。%
-学校前身是1953年创建于哈尔滨的中国人民解放军军事工程学院，简称“哈军工”。
+联邦学习是一种注重隐私的分布式机器学习范式，它将参与方的数据保留在本地，联合各方的本地模型参数，聚合生成全局模型参数，进而完成联合训练，在解决数据孤岛问题上展现了巨大的潜力。但是相关研究表明，参与方上传的模型参数携带有原始数据的特征，仍然有泄露原始隐私数据的风险。同时，一些具体的场景给经典的模型参数聚合算法（FedAvg）带来了新的挑战，比如众多IoT设备联合训练时可能发生的恶意节点（拜占庭节点）干扰，以及医疗金融等领域联合训练时受到的异质分布数据影响。
+这揭示了模型参数的隐私性和其在具体场景下的可用性之间的矛盾。一方面，对模型参数的隐私保护需求需要对参数进行加密或者扰动，以预防潜在的隐私泄露风险；另一方面，一些具体的联邦学习场景需要引入复杂的计算保证模型参数的鲁棒聚合，这进一步提升了对模型参数的可用性需求。如何权衡模型参数的隐私性和日益增长的模型参数可用性需求，是一个非常有挑战性且有实际应用价值的难题。
+%经典的联邦学习聚合算法（FedAvg）性能急剧下降。
+%同时一些具体的联邦学习场景也给经典的联邦学习聚合算法带来了新的挑战。
+%同时更加复杂的应用场景也给联邦学习带来了新的挑战。一方面，对模型参数的隐私保护需求需要对参数进行扰动或者加密，以预防潜在的隐私泄露风险；另一方面，复杂场景下的联邦学习也引入了更加复杂的模型参数聚合算法，如何在保护模型参数隐私的同时，实现高效、鲁棒的联邦学习方案，是联邦学习走向更复杂应用场景必须要解决的难题。
+
+本文的研究内容立足于解决联邦学习中模型参数的隐私泄露问题，分别具体考虑两种场景对模型参数安全高效聚合带来的挑战：$(\rm \romannumeral1)$ 恶意节点（拜占庭节点）的干扰；$(\rm \romannumeral2)$异质分布数据的影响。
+论文主要工作与核心贡献如下：
+
+（1）针对联邦学习中的隐私威胁和拜占庭节点威胁，本文提出了一种拜占庭容错的隐私保护联邦学习方案。具体来说，本文首先提出了一种密文计算友好的拜占庭鲁棒聚合算法，然后利用多方同态加密技术设计隐私计算模块，在密文上实现了对拜占庭节点的鲁棒聚合。理论分析结合实验结果表明，方案在密文上完成了对恶意模型参数的过滤，充分利用良性用户的模型参数训练全局模型，实现了较高的推理准确率，同时轻量的拜占庭鲁棒聚合算法也保证了密文计算上的高效性。此外，本文提出的密文计算友好的拜占庭容错聚合算法，理论上支持采用不同的隐私保护技术来实现密文上的鲁棒聚合，具有较好的扩展性。
+
+（2）为了应对联邦学习中异质分布数据带来的挑战，同时兼顾对模型参数的隐私保护，本文提出了一种高效的提升异质分布数据训练准确率的隐私保护联邦学习方案。具体而言，本文基于扩展性较好的引入聚类方法的联邦学习方案，利用秘密共享、伪随机生成以及Diffie-Hellman密钥协商等密码学技术，高效实现了基于聚类方法的安全聚合，同时保证了对模型参数的完全隐私保护。理论分析和实验验证表明，方案在对模型参数提供强隐私保护的同时，大幅提升了异质分布数据联合训练的准确率。此外，本文提出的方案具有较好的扩展性，理论上可以结合其它提升异质分布数据训练性能的方案，赋予其模型参数的隐私保护能力，进一步提升全局模型的推理准确率。
+
+%\begin{compactenum}
+%	\item 针对联邦学习中的隐私威胁和拜占庭节点威胁，本文提出了一种拜占庭容错的隐私保护联邦学习方案。具体来说，本文首先提出了一种密文计算友好的拜占庭鲁棒聚合方案，再利用多方同态加密作为隐私计算模块，在密文上实现了对拜占庭节点的鲁棒聚合。理论分析结合实验结果表明，方案实现了对中间模型参数的隐私保护、对拜占庭节点的鲁棒性以及聚合计算的高效性。
+%	\item 为了应对联邦学习中异质分布数据带来的挑战，同时兼顾对中间模型参数的隐私保护，本文提出了一种高效的提升异质分布数据训练准确率的隐私保护联邦学习方案。具体而言，本文基于扩展性较好的聚类异质联邦学习方案，利用秘密共享、伪随机生成以及密钥协商等密码技术，高效实现了对中间模型参数的完全隐私保护。理论分析和实验验证表明，方案在对中间模型参数提供强隐私保护的同时，大幅提升了异质分布数据联合训练的准确率。
+%\end{compactenum}
 \end{cabstract}
-\ckeywords{国防科学技术大学; 211; 哈军工}
+\ckeywords{联邦学习；隐私保护；拜占庭鲁棒；异质分布数据；多方同态加密；安全多方计算}
 
 \begin{eabstract}
-National University of Defense Technology is a comprehensive national key university based in Changsha, %
-Hunan Province, China. It is under the dual supervision of the Ministry of National Defense %
-and the Ministry of Education, designated for Project 211 and Project 985, %
-the two national plans for facilitating the development of Chinese higher education. %
+%Federated learning (FL), a privacy-preserving distributed machine learning paradigm that keeps private data local and performs joint training by exchanging model parameters, showing great potential in solving the problem of data silos. However, some researches show that model parameters still have the risk of leaking private data, while more complex application scenarios also bring new challenges to FL. On the one hand, the privacy protection of model parameters requires perturbation or encryption of parameters to prevent potential privacy leakage risk; on the other hand, FL in complex scenarios also introduces more complex model parameter aggregation schemes, and how to achieve an efficient and robust FL scheme while protecting the privacy of model parameters is necessary for FL to be applied in complex application scenarios.
 
-NUDT was originally founded in 1953 as the Military Academy of Engineering in Harbin of Heilongjiang Province. %
-In 1970 the Academy of Engineering moved southwards to Changsha and was renamed Changsha Institute of Technology.%
- The Institute changed its name to National University of Defense Technology in 1978.
+Federated learning (FL) is a privacy-conscious distributed machine learning paradigm, which keeps the data of the participants locally and aggregates the local model parameters of each party to generate global model parameters for joint training, showing great potential in solving the problem of data silos. However, some researches show that the model parameters uploaded by the participants carry the characteristics of the original data, and there is still a risk of leaking the original private data. Meanwhile, some specific scenarios bring new challenges to the classical model parameter aggregation algorithm (FedAvg), such as the interference of malicious nodes (Byzantine nodes) that may occur when many IoT devices are jointly trained, and the influence of heterogeneous distributed data when jointly trained in fields such as healthcare and finance.
+This reveals conflicts between the privacy of model parameters and their usability in specific scenarios. On the one hand, the privacy protection of model parameters requires encryption or perturbation of parameters to prevent potential privacy leakage risks; on the other hand, some specific FL scenarios require complex computations to ensure robust aggregation of model parameters, which further enhances the usability of model parameters. The trade-off between the privacy of model parameters and the increasing model parameter usability is a practical challenge.
+
+This paper is devoted to privacy leakage threat in FL, and specifically considers the challenges posed by two specific scenarios for secure and efficient aggregation of model parameters: $(\rm \romannumeral1)$ interference from malicious participants (Byzantine users); and $(\rm \romannumeral2)$ the impact of heterogeneous distributed data. Specifically, the main work and core contributions of this paper are as follows.
+
+(1) To address the privacy threat and Byzantine threat in FL, this paper proposes a Byzantine-robust privacy-preserving FL scheme. In particular, this paper first proposes a ciphertext computationally friendly Byzantine-robust aggregation scheme, and then implements robust aggregation of Byzantine users over ciphertexts using Multiparty Homomorphic Encryption (MHE) as the privacy building block. The theoretical analysis and experimental results show that the scheme accomplishes the filtering of malicious parameters over ciphertexts, makes full use of the parameters of benign users to train the global model, and thus achieves high inference accuracy. Meanwhile, our lightweight Byzantine-robust aggregation scheme ensures high efficiency over ciphertext computation. In addition, the Byzantine-robust aggregation scheme proposed in this paper is theoretically scalable by using different privacy-preserving techniques to achieve robust aggregation over ciphertexts.
+
+(2) To address the challenges posed by heterogeneous data distribution in FL while protecting the privacy of model parameters, this paper proposes an efficient privacy-preserving FL scheme for improving the training accuracy of heterogeneously distributed data. Specifically, based on the well-expanded clustered heterogeneous FL scheme, this paper efficiently achieves full privacy protection of the model parameters by using cryptographic techniques such as Secret Sharing (SS), pseudo-random generation (PRG), and Diffie-Hellman key agreement protocol. Theoretical analysis and experimental validation show that the scheme substantially improves the accuracy of joint training of heterogeneous distributed data while providing strong privacy protection for the model parameters. In addition, the proposed scheme has good extensibility, which can be combined with other schemes to improve the training performance of heterogeneous data distribution, endow the privacy-preserving ability of its model parameters, and thus further improve the inference accuracy of the global model.
 
 \end{eabstract}
-\ekeywords{NUDT; MND; ME}
+\ekeywords{Federated Learning, Privacy-preserving, Byzantine-robust, Heterogeneous data distribution, Multiparty Homomorphic Encryption, Secure Multi-Party Computation}
 
