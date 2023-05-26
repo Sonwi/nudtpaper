@@ -52,7 +52,17 @@
 %
 %7. 如果是专硕，则使用prof选项
 %\documentclass[master,twoside,biber,resumebib,prof,ttf]{nudtpaper}
-\documentclass[master,biber,resumebib,prof,ttf]{nudtpaper}
+%lsw upload
+%明评
+%\documentclass[master,biber,resumebib,prof,ttf]{nudtpaper}
+%盲评
+%\documentclass[master,biber,resumebib,prof,ttf,anon]{nudtpaper}
+
+%lsw print
+%明评
+\documentclass[master,biber,prof,ttf,twoside]{nudtpaper}
+%盲评
+%\documentclass[master,biber,resumebib,prof,ttf,twoside,anon]{nudtpaper}
 %
 % \documentclass[doctor,twoside,biber,resumebib,fz]{nudtpaper}
 \addbibresource[location=local]{ref/refs.bib}
@@ -99,7 +109,7 @@
 \listoffigures
 
 %如果不是送审论文，则将true改为false即可
-\newif\ifreview\reviewtrue
+\newif\ifreview\reviewfalse
 
 \midmatter
 \input{data-lsw/abstract}
@@ -133,6 +143,7 @@
 \fi
 
 \input{data-lsw/resume}
+\ifisanon{~}\else{\input{data-lsw/reviewinfo}}\fi%公开评阅信息
 % 最后，需要的话还要生成附录，全文随之结束。
 \appendix
 \backmatter
